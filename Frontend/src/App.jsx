@@ -24,7 +24,6 @@ function App() {
     setReview(response.data)
 
   }
-
   return (
     <main>
       <div className="left">
@@ -46,8 +45,8 @@ function App() {
           />
         </div>
         <div
-        onClick={reviewCode}
-        className="review">Review</div>
+          onClick={reviewCode}
+          className="review">Review</div>
       </div>
       <div className="right">
         <Markdown
