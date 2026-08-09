@@ -9,52 +9,33 @@ body,
 #root {
     height: 100%;
     width: 100%;
+    overflow: hidden;
 }
 
 main {
-    height: 100%;
+    height: 100vh;
     width: 100%;
     padding: 1.5rem;
     display: flex;
     gap: 1rem;
     background-color: #111217;
+    overflow: hidden;
 }
 
-main .left,
-main .right {
+/* =========================
+   LEFT - CODE EDITOR
+========================= */
+
+main .left {
+    flex: 0 0 40%;
+    width: 40%;
     height: 100%;
     border-radius: 0.7rem;
-    overflow: hidden;
-    min-width: 0;
-}
-
-main .left {
-    background-color: #000;
-    position: relative;
-    border: 1px solid #333;
-}
-
-.left .code {
-    height: 100%;
-    width: 100%;
-}
-
-.left .code textarea,
-.left .code pre {
-    width: 100% !important;
-    min-width: 0 !important;
-}
-
-main .right {
-    flex: 1;
-}
-
-/* LEFT SIDE */
-
-main .left {
     background-color: #000000;
     position: relative;
     border: 1px solid #333;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .left .code,
@@ -67,7 +48,20 @@ main .left {
     background-color: #0c0c0c;
 }
 
-/* Review Button */
+.left .code {
+    overflow: hidden;
+}
+
+.left .code textarea,
+.left .code pre {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+}
+
+/* =========================
+   REVIEW BUTTON
+========================= */
 
 main .left .review {
     position: absolute;
@@ -75,7 +69,7 @@ main .left .review {
     right: 1rem;
 
     background-color: rgb(219, 219, 255);
-    color: #000;
+    color: #000000;
 
     padding: 0.7rem 2rem;
 
@@ -86,6 +80,7 @@ main .left .review {
     border-radius: 0.7rem;
 
     cursor: pointer;
+    user-select: none;
 
     transition: all 0.2s ease;
 }
@@ -100,42 +95,54 @@ main .left .review:disabled {
     transform: none;
 }
 
-
-/* RIGHT SIDE */
+/* =========================
+   RIGHT - AI REVIEW
+========================= */
 
 main .right {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+
     background-color: #343434;
+
     padding: 1.5rem 2rem;
 
     font-size: 1.05rem;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
     color: #d5d5d5;
 
     border: 1px solid #444;
+    border-radius: 0.7rem;
+
+    /* ONLY RIGHT SIDE SCROLLS */
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
-
-/* Review Header */
+/* =========================
+   REVIEW HEADER
+========================= */
 
 .review-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     margin-bottom: 1rem;
     padding-bottom: 0.8rem;
+
     border-bottom: 1px solid #555;
 }
 
 .review-header h2 {
     margin: 0;
-    color: #fff;
+    color: #ffffff;
     font-size: 1.4rem;
 }
 
-/* AI / Demo Badge */
+/* =========================
+   AI / DEMO BADGE
+========================= */
 
 .ai-badge,
 .demo-badge {
@@ -157,16 +164,12 @@ main .right {
     color: #ffd35a;
 }
 
+/* =========================
+   MARKDOWN REVIEW
+========================= */
 
-/* Markdown */
-
-.review-content p {
-    text-align: left;
-}
-
-.review-content h1,
-.review-content h2,
-.review-content h3 {
+.review-content {
+    line-height: 1.6;
     text-align: left;
 }
 
@@ -174,6 +177,7 @@ main .right {
 .review-content h2,
 .review-content h3 {
     color: #ffffff;
+    text-align: left;
 
     margin-top: 1.5rem;
     margin-bottom: 0.7rem;
@@ -194,6 +198,7 @@ main .right {
 .review-content p {
     margin-bottom: 0.8rem;
     color: #d0d0d0;
+    text-align: left;
 }
 
 .review-content ul,
@@ -206,8 +211,9 @@ main .right {
     margin-bottom: 0.4rem;
 }
 
-
-/* Code Blocks */
+/* =========================
+   CODE BLOCKS INSIDE REVIEW
+========================= */
 
 .review-content pre {
     width: 100%;
@@ -215,7 +221,6 @@ main .right {
     overflow-x: auto;
 
     padding: 1rem;
-
     margin: 1rem 0;
 
     border-radius: 0.6rem;
@@ -225,14 +230,13 @@ main .right {
 
 .review-content pre code {
     font-family: "Fira Code", monospace;
-
     font-size: 0.9rem;
-
     white-space: pre;
 }
 
-
-/* Inline Code */
+/* =========================
+   INLINE CODE
+========================= */
 
 .review-content :not(pre) > code {
     background-color: #202025;
@@ -244,8 +248,9 @@ main .right {
     color: #ffffff;
 }
 
-
-/* Loading */
+/* =========================
+   LOADING
+========================= */
 
 .loading {
     height: 70%;
@@ -279,8 +284,9 @@ main .right {
     }
 }
 
-
-/* Empty Review */
+/* =========================
+   EMPTY REVIEW
+========================= */
 
 .empty-review {
     height: 80%;
@@ -308,12 +314,12 @@ main .right {
     color: #999;
 }
 
-
-/* Error */
+/* =========================
+   ERROR
+========================= */
 
 .error-box {
     padding: 1rem;
-
     margin-top: 1rem;
 
     border-radius: 0.6rem;
@@ -325,8 +331,9 @@ main .right {
     color: #ff8f8f;
 }
 
-
-/* Scrollbar */
+/* =========================
+   RIGHT PANEL SCROLLBAR
+========================= */
 
 main .right::-webkit-scrollbar {
     width: 8px;
@@ -341,27 +348,39 @@ main .right::-webkit-scrollbar-thumb {
     border-radius: 10px;
 }
 
+main .right::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
 
-/* Mobile */
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 768px) {
+
+    html,
+    body,
+    #root {
+        overflow: auto;
+    }
 
     main {
         flex-direction: column;
         height: auto;
-        min-height: 100%;
+        min-height: 100vh;
         padding: 1rem;
+        overflow: visible;
     }
 
-    main .left,
-    main .right {
-        flex-basis: auto;
+    main .left {
+        flex: none;
         width: 100%;
         height: 500px;
     }
 
     main .right {
-        padding: 1rem;
+        flex: none;
+        width: 100%;
+        height: 600px;
     }
-
 }
