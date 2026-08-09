@@ -23,9 +23,30 @@ main {
 main .left,
 main .right {
     height: 100%;
-    flex-basis: 50%;
     border-radius: 0.7rem;
     overflow: hidden;
+    min-width: 0;
+}
+
+main .left {
+    background-color: #000;
+    position: relative;
+    border: 1px solid #333;
+}
+
+.left .code {
+    height: 100%;
+    width: 100%;
+}
+
+.left .code textarea,
+.left .code pre {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+main .right {
+    flex: 1;
 }
 
 /* LEFT SIDE */
@@ -54,20 +75,19 @@ main .left .review {
     right: 1rem;
 
     background-color: rgb(219, 219, 255);
-    color: #000000;
+    color: #000;
 
     padding: 0.7rem 2rem;
 
     font-size: 1rem;
     font-weight: 600;
 
-    cursor: pointer;
-    user-select: none;
-
     border: none;
     border-radius: 0.7rem;
 
-    transition: 0.2s ease;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
 }
 
 main .left .review:hover {
@@ -104,19 +124,16 @@ main .right {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     margin-bottom: 1rem;
-
     padding-bottom: 0.8rem;
-
     border-bottom: 1px solid #555;
 }
 
 .review-header h2 {
+    margin: 0;
+    color: #fff;
     font-size: 1.4rem;
-    color: #ffffff;
 }
-
 
 /* AI / Demo Badge */
 
@@ -143,8 +160,14 @@ main .right {
 
 /* Markdown */
 
-.review-content {
-    line-height: 1.6;
+.review-content p {
+    text-align: left;
+}
+
+.review-content h1,
+.review-content h2,
+.review-content h3 {
+    text-align: left;
 }
 
 .review-content h1,
