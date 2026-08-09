@@ -1,7 +1,77 @@
 const aiService = require("../services/ai.service");
 
+const demoReview = `
+## 🟡 Demo/Fallback Review
+
+> AI service is temporarily unavailable.
+> This is a demo review so that the application can continue working.
+
+## 🧠 Summary
+
+The submitted code appears to contain a simple function that calculates
+the sum of two values.
+
+## 🔴 Critical Issues
+
+No critical security issues found.
+
+## 🟡 Issues & Improvements
+
+### 1. Function Parameters
+
+Make sure the function receives the required values through parameters
+instead of relying on variables from the global scope.
+
+### 2. Input Validation
+
+Consider validating the input when the function is used with external data.
+
+## ⚡ Performance
+
+Time Complexity: O(1)
+
+Space Complexity: O(1)
+
+The operation uses constant time and constant extra space.
+
+## 🔐 Security
+
+No major security vulnerabilities were identified in this example.
+
+## ✅ Good Things
+
+- Function name is simple and meaningful.
+- The operation itself is efficient.
+- The implementation is easy to understand.
+
+## 🔧 Recommended Code
+
+\`\`\`javascript
+function sum(a, b) {
+    return a + b;
+}
+\`\`\`
+
+## 📊 Score
+
+Code Quality: 8/10
+Performance: 10/10
+Security: 9/10
+Readability: 9/10
+Maintainability: 8/10
+
+Overall Score: 8.8/10
+
+## 🎯 Final Recommendation
+
+Keep the implementation simple and make sure inputs are explicitly
+passed to the function.
+`;
+
 module.exports.getReview = async (req, res) => {
+
     try {
+
         const code = req.body.code;
 
         if (!code) {
@@ -10,19 +80,22 @@ module.exports.getReview = async (req, res) => {
 
         const response = await aiService(code);
 
-        res.status(200).send(response);
+        return res.status(200).json({
+            success: true,
+            mode: "ai",
+            review: response
+        });
 
     } catch (error) {
+
         console.error("AI Review Error:", error);
 
-        if (error.status === 429) {
-            return res.status(429).send(
-                "AI service quota exceeded. Please try again later."
-            );
-        }
-
-        res.status(500).send("Something went wrong while generating review.");
+        // AI service failed → Demo/Fallback Mode
+        return res.status(200).json({
+            "success": true,
+            "mode": "demo",
+            "message": "AI service is temporarily unavailable...",
+            "review": "..."
+        });
     }
 };
-
-
