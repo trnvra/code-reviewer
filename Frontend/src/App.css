@@ -1,511 +1,450 @@
-/* =========================
-   GLOBAL RESET
-========================= */
-
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
+body {
+  background-color: #111217;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
 
 /* =========================
    MAIN LAYOUT
 ========================= */
 
 main {
-    width: 100%;
-    height: 100vh;
-
-    padding: 1.5rem;
-
-    display: grid;
-
-    /* 40% Code + 60% Review */
-    grid-template-columns: 2fr 3fr;
-
-    gap: 1rem;
-
-    background-color: #111217;
-
-    overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  padding: 1.5rem;
+  display: flex;
+  gap: 1.2rem;
+  background-color: #111217;
+  overflow: hidden;
 }
-
 
 /* =========================
    LEFT - CODE EDITOR
+   40%
 ========================= */
 
 main .left {
-    width: 100%;
-    height: 100%;
+  flex: 0 0 40%;
+  width: 40%;
+  height: 100%;
+  position: relative;
 
-    min-width: 0;
-    min-height: 0;
+  background-color: #1e1e1e;
 
-    position: relative;
+  border: 1px solid #333;
+  border-radius: 0.8rem;
 
-    background-color: #000000;
-
-    border: 1px solid #333;
-    border-radius: 0.7rem;
-
-    overflow: hidden;
+  overflow: hidden;
 }
-
 
 /* Code editor wrapper */
 
 .left .code {
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
-
 
 /* react-simple-code-editor */
 
 .left .code textarea,
 .left .code pre {
-    width: 100% !important;
-    height: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
 
-    min-width: 0 !important;
+  margin: 0 !important;
+  padding: 1.2rem !important;
 
-    margin: 0 !important;
+  border: none !important;
+  outline: none !important;
 
-    border: none !important;
-    outline: none !important;
+  background-color: #1e1e1e !important;
 
-    border-radius: 0.7rem;
+  font-family: "Fira Code", "Fira Mono", monospace !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
 
-    background-color: #0c0c0c !important;
+  overflow: auto !important;
 }
-
-
-/* Code text */
-
-.left .code pre,
-.left .code pre code,
-.left .code textarea {
-    font-family: "Fira Code", "Fira Mono", monospace !important;
-
-    font-size: 16px !important;
-
-    line-height: 1.6 !important;
-}
-
 
 /* =========================
    REVIEW BUTTON
 ========================= */
 
 main .left .review {
-    position: absolute;
+  position: absolute;
 
-    bottom: 1rem;
-    right: 1rem;
+  bottom: 1.2rem;
+  right: 1.2rem;
 
-    z-index: 10;
+  padding: 0.75rem 1.8rem;
 
-    background-color: rgb(219, 219, 255);
+  background: linear-gradient(
+    135deg,
+    #7c5cff,
+    #5b3df5
+  );
 
-    color: #000000;
+  color: white;
 
-    padding: 0.7rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
 
-    font-size: 1rem;
-    font-weight: 600;
+  border: none;
+  border-radius: 0.6rem;
 
-    border: none;
-    border-radius: 0.7rem;
+  cursor: pointer;
 
-    cursor: pointer;
+  box-shadow: 0 6px 20px rgba(92, 61, 245, 0.35);
 
-    user-select: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 
-    transition: all 0.2s ease;
+  z-index: 10;
 }
 
 main .left .review:hover {
-    transform: translateY(-2px);
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 25px rgba(92, 61, 245, 0.5);
 }
 
 main .left .review:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 main .left .review:disabled {
-    opacity: 0.6;
-
-    cursor: not-allowed;
-
-    transform: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
-
 /* =========================
-   RIGHT - AI REVIEW
+   RIGHT - AI REPORT
+   60%
 ========================= */
 
 main .right {
-    width: 100%;
-    height: 100%;
+  flex: 0 0 60%;
+  width: 60%;
+  height: 100%;
 
-    min-width: 0;
-    min-height: 0;
+  background-color: #111217;
 
-    padding: 1.5rem 2rem;
+  border: 1px solid #333;
+  border-radius: 0.8rem;
 
-    background-color: #343434;
+  padding: 1.5rem 2rem;
 
-    color: #d5d5d5;
+  color: #d5d5d5;
 
-    font-size: 1.05rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
 
-    border: 1px solid #444;
-    border-radius: 0.7rem;
+  /* IMPORTANT */
+  overflow-y: auto;
+  overflow-x: hidden;
 
-    /* Only RIGHT side scrolls */
-    overflow-y: auto;
-    overflow-x: hidden;
+  min-width: 0;
 }
 
+/* =========================
+   RIGHT SCROLLBAR
+========================= */
+
+main .right::-webkit-scrollbar {
+  width: 8px;
+}
+
+main .right::-webkit-scrollbar-track {
+  background: #17181d;
+  border-radius: 10px;
+}
+
+main .right::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+main .right::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
 
 /* =========================
    REVIEW HEADER
 ========================= */
 
 .review-header {
-    width: 100%;
+  display: flex;
 
-    display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-    align-items: center;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.9rem;
 
-    justify-content: space-between;
-
-    margin-bottom: 1rem;
-
-    padding-bottom: 0.8rem;
-
-    border-bottom: 1px solid #555;
+  border-bottom: 1px solid #444;
 }
 
 .review-header h2 {
-    margin: 0;
+  margin: 0;
 
-    color: #ffffff;
+  color: #ffffff;
 
-    font-size: 1.4rem;
+  font-size: 1.5rem;
 }
 
-
 /* =========================
-   AI / DEMO BADGE
+   AI BADGE
 ========================= */
 
 .ai-badge,
 .demo-badge {
-    padding: 0.4rem 0.7rem;
+  padding: 0.45rem 0.8rem;
 
-    border-radius: 0.5rem;
+  border-radius: 0.5rem;
 
-    font-size: 0.8rem;
-
-    font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .ai-badge {
-    background-color: rgba(0, 200, 100, 0.15);
-
-    color: #6cffaa;
+  background-color: rgba(0, 220, 120, 0.15);
+  color: #63f5a6;
 }
 
 .demo-badge {
-    background-color: rgba(255, 190, 0, 0.15);
-
-    color: #ffd35a;
+  background-color: rgba(255, 190, 0, 0.15);
+  color: #ffd35a;
 }
 
-
 /* =========================
-   MARKDOWN REVIEW
+   MARKDOWN CONTENT
 ========================= */
 
 .review-content {
-    width: 100%;
-
-    line-height: 1.6;
-
-    text-align: left;
+  width: 100%;
 }
 
+.review-content p {
+  margin-bottom: 1rem;
 
-/* Headings */
+  color: #d0d0d0;
+
+  text-align: left;
+}
 
 .review-content h1,
 .review-content h2,
 .review-content h3 {
-    color: #ffffff;
+  color: #ffffff;
 
-    text-align: left;
+  text-align: left;
 
-    margin-top: 1.5rem;
-
-    margin-bottom: 0.7rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .review-content h1 {
-    font-size: 1.6rem;
+  font-size: 1.7rem;
 }
 
 .review-content h2 {
-    font-size: 1.35rem;
+  font-size: 1.4rem;
 }
 
 .review-content h3 {
-    font-size: 1.15rem;
+  font-size: 1.15rem;
 }
-
-
-/* Paragraph */
-
-.review-content p {
-    margin-bottom: 0.8rem;
-
-    color: #d0d0d0;
-
-    text-align: left;
-}
-
-
-/* Lists */
 
 .review-content ul,
 .review-content ol {
-    padding-left: 1.5rem;
+  padding-left: 1.5rem;
 
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .review-content li {
-    margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
-
 
 /* =========================
    REVIEW CODE BLOCKS
 ========================= */
 
 .review-content pre {
-    width: 100%;
+  width: 100%;
 
-    overflow-x: auto;
+  overflow-x: auto;
 
-    padding: 1rem;
+  padding: 1rem;
 
-    margin: 1rem 0;
+  margin: 1rem 0;
 
-    border-radius: 0.6rem;
+  border-radius: 0.6rem;
 
-    background-color: #1e1e1e !important;
+  background-color: #1e1e1e !important;
 }
 
 .review-content pre code {
-    font-family: "Fira Code", "Fira Mono", monospace;
+  font-family: "Fira Code", monospace;
 
-    font-size: 0.9rem;
+  font-size: 0.9rem;
 
-    white-space: pre;
+  white-space: pre;
 }
-
 
 /* =========================
    INLINE CODE
 ========================= */
 
 .review-content :not(pre) > code {
-    background-color: #202025;
+  background-color: #202025;
 
-    padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.4rem;
 
-    border-radius: 0.3rem;
+  border-radius: 0.3rem;
 
-    color: #ffffff;
+  color: #ffffff;
+
+  font-family: "Fira Code", monospace;
 }
-
 
 /* =========================
    LOADING
 ========================= */
 
 .loading {
-    height: 70%;
+  height: 70%;
 
-    display: flex;
+  display: flex;
 
-    flex-direction: column;
+  flex-direction: column;
 
-    justify-content: center;
+  justify-content: center;
+  align-items: center;
 
-    align-items: center;
-
-    color: #bbbbbb;
+  color: #bbbbbb;
 }
 
 .loader {
-    width: 35px;
-    height: 35px;
+  width: 38px;
+  height: 38px;
 
-    border: 4px solid #555;
+  border: 4px solid #444;
+  border-top: 4px solid #7c5cff;
 
-    border-top: 4px solid #ffffff;
+  border-radius: 50%;
 
-    border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 
-    animation: spin 0.8s linear infinite;
-
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
-
 
 /* =========================
    EMPTY REVIEW
 ========================= */
 
 .empty-review {
-    height: 80%;
+  height: 80%;
 
-    display: flex;
+  display: flex;
 
-    flex-direction: column;
+  flex-direction: column;
 
-    justify-content: center;
+  justify-content: center;
+  align-items: center;
 
-    align-items: center;
-
-    text-align: center;
+  text-align: center;
 }
 
 .empty-icon {
-    font-size: 3rem;
+  font-size: 3rem;
 
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .empty-review h3 {
-    color: #ffffff;
+  color: #ffffff;
 
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .empty-review p {
-    color: #999;
+  color: #999;
 }
 
-
 /* =========================
-   ERROR BOX
+   ERROR
 ========================= */
 
 .error-box {
-    padding: 1rem;
+  padding: 1rem;
 
-    margin-top: 1rem;
+  margin-top: 1rem;
 
-    border-radius: 0.6rem;
+  border-radius: 0.6rem;
 
-    background-color: rgba(255, 70, 70, 0.12);
+  background-color: rgba(255, 70, 70, 0.12);
 
-    border: 1px solid rgba(255, 70, 70, 0.3);
+  border: 1px solid rgba(255, 70, 70, 0.3);
 
-    color: #ff8f8f;
+  color: #ff8f8f;
 }
-
-
-/* =========================
-   RIGHT PANEL SCROLLBAR
-========================= */
-
-main .right::-webkit-scrollbar {
-    width: 8px;
-}
-
-main .right::-webkit-scrollbar-track {
-    background: #292929;
-}
-
-main .right::-webkit-scrollbar-thumb {
-    background: #555;
-
-    border-radius: 10px;
-}
-
-main .right::-webkit-scrollbar-thumb:hover {
-    background: #777;
-}
-
 
 /* =========================
    MOBILE
 ========================= */
 
 @media (max-width: 768px) {
+  body {
+    overflow: auto;
+  }
 
-    html,
-    body,
-    #root {
-        overflow: auto;
-    }
+  main {
+    height: auto;
+    min-height: 100vh;
 
-    main {
-        width: 100%;
-        height: auto;
+    flex-direction: column;
 
-        min-height: 100vh;
+    padding: 1rem;
 
-        padding: 1rem;
+    overflow: visible;
+  }
 
-        display: flex;
+  main .left,
+  main .right {
+    width: 100%;
+    flex: none;
+  }
 
-        flex-direction: column;
+  main .left {
+    height: 500px;
+  }
 
-        overflow: visible;
-    }
+  main .right {
+    height: 600px;
 
-    main .left {
-        width: 100%;
-        height: 500px;
-
-        min-height: 500px;
-
-        flex-shrink: 0;
-    }
-
-    main .right {
-        width: 100%;
-        height: 600px;
-
-        min-height: 600px;
-
-        flex-shrink: 0;
-
-        padding: 1rem;
-    }
+    padding: 1rem;
+  }
 }
