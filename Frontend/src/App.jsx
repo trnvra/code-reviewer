@@ -26,6 +26,60 @@ function App() {
     // Score ko AI response se nikalne ke liye
     function extractScores(text) {
 
+    // Markdown ** ko remove kar rahe hain
+    const cleanText = text.replace(/\*\*/g, "");
+
+    const getScore = (name) => {
+
+        const regex = new RegExp(
+            name + "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
+            "i"
+        );
+
+        const match = cleanText.match(regex);
+
+        return match ? Number(match[1]) : null;
+    };
+
+    const codeQuality = getScore("Code Quality");
+    const performance = getScore("Performance");
+    const security = getScore("Security");
+    const readability = getScore("Readability");
+    const maintainability = getScore("Maintainability");
+
+    let overall = getScore("Overall Score");
+
+    // Agar AI Overall Score nahi deta,
+    // to 5 scores ka average calculate karenge
+    if (overall === null) {
+
+        const scores = [
+            codeQuality,
+            performance,
+            security,
+            readability,
+            maintainability
+        ].filter(score => score !== null);
+
+        if (scores.length > 0) {
+            overall =
+                scores.reduce((sum, score) => sum + score, 0) /
+                scores.length;
+
+            overall = Number(overall.toFixed(1));
+        }
+    }
+
+    return {
+        codeQuality,
+        performance,
+        security,
+        readability,
+        maintainability,
+        overall
+    };
+}
+
         const getScore = (name) => {
 
             const regex = new RegExp(
@@ -46,7 +100,7 @@ function App() {
             maintainability: getScore("Maintainability"),
             overall: getScore("Overall Score")
         };
-    }
+    
 
 
     async function reviewCode() {
