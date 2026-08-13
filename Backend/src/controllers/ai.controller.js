@@ -28,11 +28,18 @@ Consider validating the input when the function is used with external data.
 
 ## ⚡ Performance
 
-Time Complexity: O(1)
+Analyze the time and space complexity of the code.
 
-Space Complexity: O(1)
+Always use this format:
 
-The operation uses constant time and constant extra space.
+- Time Complexity: O(...)
+- Space Complexity: O(...)
+- Explanation: Explain why this complexity occurs in simple language.
+- Optimization: Mention a better approach if one exists.
+
+If the code has loops, nested loops, recursion, sorting, searching, or data structures, consider them carefully when calculating complexity.
+
+Do not guess complexity. Base it on the actual code.
 
 ## 🔐 Security
 
