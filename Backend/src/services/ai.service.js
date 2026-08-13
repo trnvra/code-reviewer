@@ -48,6 +48,25 @@ Mention serious bugs or security problems.
 If none exist, write:
 "No critical issues found."
 
+
+## 🐛 Bug Detection
+Find actual bugs and logical errors in the code.
+
+For each bug, use this format:
+
+### Bug 1
+- Severity: High / Medium / Low
+- Location: Mention the exact line or code section
+- Problem: Explain what is wrong
+- Why it happens: Explain the reason
+- Fix: Give the practical fix
+
+Only report real bugs or strong potential bugs.
+Do not report style issues as bugs.
+
+If no bugs are found, write:
+"No bugs detected."
+
 ## 🟡 Issues & Improvements
 Explain bugs, bad practices, readability problems or maintainability issues.
 
