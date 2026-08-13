@@ -1,88 +1,310 @@
 import { useState } from "react";
+
 import Editor from "react-simple-code-editor";
+
 import Prism from "prismjs";
+
 import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-csharp";
+import "prismjs/components/prism-markup";
+import "prismjs/components/prism-css";
+
 import "prismjs/themes/prism-tomorrow.css";
 
 import Markdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+
 import "highlight.js/styles/github-dark.css";
 
 import axios from "axios";
+
 import "./App.css";
+
 
 const CodeEditor = Editor.default || Editor;
 
-function App() {
-    const [code, setCode] = useState(`function sum() {
-  return a + b
-}`);
 
-    const [review, setReview] = useState("");
-    const [mode, setMode] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+/* ============================= */
+/* LANGUAGE DETECTION */
+/* ============================= */
 
-    // Full Code / Selected Code
-    const [reviewScope, setReviewScope] = useState("full");
+function detectLanguage(code) {
 
-    // Editor me selected text
-    const [selectedCode, setSelectedCode] = useState("");
+    const text = code.trim();
 
-
-    // Score ko AI response se nikalne ke liye
-    function extractScores(reviewText) {
-
-        const cleanText = reviewText.replace(/\*/g, "");
-
-        const getScore = (name) => {
-
-            const regex = new RegExp(
-                name + "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
-                "i"
-            );
-
-            const match = cleanText.match(regex);
-
-            return match ? Number(match[1]) : null;
-        };
-
+    if (!text) {
         return {
-            codeQuality: getScore("Code Quality"),
-            performance: getScore("Performance"),
-            security: getScore("Security"),
-            readability: getScore("Readability"),
-            maintainability: getScore("Maintainability"),
-            overall: getScore("Overall Score")
+            name: "Plain Text",
+            prism: "plain"
         };
     }
 
 
-    // Editor me code select hone par selected code save karo
+    /* HTML */
+
+    if (
+        /<!DOCTYPE\s+html/i.test(text) ||
+        /<html[\s>]/i.test(text) ||
+        /<body[\s>]/i.test(text) ||
+        /<div[\s>]/i.test(text)
+    ) {
+        return {
+            name: "HTML",
+            prism: "markup"
+        };
+    }
+
+
+    /* CSS */
+
+    if (
+        /[.#]?[a-zA-Z][\w-]*\s*\{[\s\S]*:[\s\S]*;[\s\S]*\}/.test(text)
+    ) {
+        return {
+            name: "CSS",
+            prism: "css"
+        };
+    }
+
+
+    /* C++ */
+
+    if (
+        /#include\s*<iostream>/.test(text) ||
+        /#include\s*<vector>/.test(text) ||
+        /#include\s*<string>/.test(text) ||
+        /using\s+namespace\s+std\s*;/.test(text) ||
+        /\bstd::/.test(text) ||
+        /\bcout\s*<</.test(text) ||
+        /\bcin\s*>>/.test(text)
+    ) {
+        return {
+            name: "C++",
+            prism: "cpp"
+        };
+    }
+
+
+    /* C */
+
+    if (
+        /#include\s*<stdio\.h>/.test(text) ||
+        /\bprintf\s*\(/.test(text) ||
+        /\bscanf\s*\(/.test(text)
+    ) {
+        return {
+            name: "C",
+            prism: "c"
+        };
+    }
+
+
+    /* C# */
+
+    if (
+        /using\s+System\s*;/.test(text) ||
+        /\bConsole\.WriteLine\s*\(/.test(text) ||
+        /\bnamespace\s+\w+/.test(text)
+    ) {
+        return {
+            name: "C#",
+            prism: "csharp"
+        };
+    }
+
+
+    /* Java */
+
+    if (
+        /public\s+class\s+\w+/.test(text) ||
+        /public\s+static\s+void\s+main/.test(text) ||
+        /System\.out\.println\s*\(/.test(text)
+    ) {
+        return {
+            name: "Java",
+            prism: "java"
+        };
+    }
+
+
+    /* Python */
+
+    if (
+        /\bdef\s+\w+\s*\(/.test(text) ||
+        /\bimport\s+\w+/.test(text) ||
+        /\bfrom\s+\w+\s+import\b/.test(text) ||
+        /\bprint\s*\(/.test(text) ||
+        /:\s*\n\s{4,}/.test(text)
+    ) {
+        return {
+            name: "Python",
+            prism: "python"
+        };
+    }
+
+
+    /* JavaScript */
+
+    if (
+        /\b(const|let|var)\s+\w+/.test(text) ||
+        /\bfunction\s+\w+\s*\(/.test(text) ||
+        /=>/.test(text) ||
+        /\bconsole\.log\s*\(/.test(text) ||
+        /\b(document|window)\./.test(text)
+    ) {
+        return {
+            name: "JavaScript",
+            prism: "javascript"
+        };
+    }
+
+
+    /* Default */
+
+    return {
+        name: "Plain Text",
+        prism: "plain"
+    };
+}
+
+
+/* ============================= */
+/* APP */
+/* ============================= */
+
+function App() {
+
+    const [code, setCode] = useState(`function sum() {
+  return a + b
+}`);
+
+
+    const [review, setReview] = useState("");
+
+    const [mode, setMode] = useState("");
+
+    const [loading, setLoading] = useState(false);
+
+    const [error, setError] = useState("");
+
+
+    /* Full / Selected Code */
+
+    const [reviewScope, setReviewScope] = useState("full");
+
+
+    /* Selected code */
+
+    const [selectedCode, setSelectedCode] = useState("");
+
+
+    /* Detect language automatically */
+
+    const language = detectLanguage(code);
+
+
+    /* ============================= */
+    /* SCORE EXTRACTION */
+    /* ============================= */
+
+    function extractScores(reviewText) {
+
+        const cleanText = reviewText.replace(/\*/g, "");
+
+
+        const getScore = (name) => {
+
+            const regex = new RegExp(
+                name +
+                "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
+                "i"
+            );
+
+
+            const match = cleanText.match(regex);
+
+
+            return match
+                ? Number(match[1])
+                : null;
+        };
+
+
+        return {
+
+            codeQuality:
+                getScore("Code Quality"),
+
+            performance:
+                getScore("Performance"),
+
+            security:
+                getScore("Security"),
+
+            readability:
+                getScore("Readability"),
+
+            maintainability:
+                getScore("Maintainability"),
+
+            overall:
+                getScore("Overall Score")
+
+        };
+    }
+
+
+    /* ============================= */
+    /* CODE SELECTION */
+    /* ============================= */
+
     function handleCodeSelect(event) {
 
         const textarea = event.target;
 
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
 
-        const selectedText = code.substring(start, end);
+        const start =
+            textarea.selectionStart;
+
+
+        const end =
+            textarea.selectionEnd;
+
+
+        const selectedText =
+            code.substring(start, end);
+
 
         setSelectedCode(selectedText);
     }
 
 
+    /* ============================= */
+    /* REVIEW CODE */
+    /* ============================= */
+
     async function reviewCode() {
 
         if (!code.trim()) {
-            setError("Please enter some code first.");
+
+            setError(
+                "Please enter some code first."
+            );
+
             return;
         }
 
 
-        // Agar Selected Code mode hai
-        // to selected code hona compulsory hai
-        if (reviewScope === "selected" && !selectedCode.trim()) {
+        /* Selected Code validation */
+
+        if (
+            reviewScope === "selected" &&
+            !selectedCode.trim()
+        ) {
 
             setError(
                 "Please select some code first for Selected Code Review."
@@ -93,14 +315,16 @@ function App() {
 
 
         setLoading(true);
+
         setError("");
+
         setReview("");
+
         setMode("");
 
 
         try {
 
-            // AI ko kya bhejna hai?
             const codeToReview =
                 reviewScope === "selected"
                     ? selectedCode
@@ -108,48 +332,93 @@ function App() {
 
 
             const response = await axios.post(
+
                 "https://code-reviewer-s0ya.onrender.com/ai/get-review",
+
                 {
-                    code: codeToReview
+                    code: codeToReview,
+                    language: language.name
                 }
+
             );
 
 
-            console.log("FULL RESPONSE:", response.data);
+            console.log(
+                "FULL RESPONSE:",
+                response.data
+            );
 
 
-            setReview(response.data.review);
-            setMode(response.data.mode);
+            setReview(
+                response.data.review
+            );
+
+
+            setMode(
+                response.data.mode
+            );
 
 
         } catch (error) {
 
-            console.error("Review Error:", error);
-
-            setError(
-                error.response?.data?.message ||
-                "Something went wrong while reviewing the code."
+            console.error(
+                "Review Error:",
+                error
             );
 
+
+            setError(
+
+                error.response?.data?.message ||
+
+                "Something went wrong while reviewing the code."
+
+            );
 
         } finally {
 
             setLoading(false);
-
         }
     }
 
 
-    const scores = review
-        ? extractScores(review)
-        : null;
+    const scores =
+        review
+            ? extractScores(review)
+            : null;
+
+
+    /* ============================= */
+    /* PRISM HIGHLIGHT */
+    /* ============================= */
+
+    function highlightCode(codeText) {
+
+        const grammar =
+            Prism.languages[language.prism];
+
+
+        if (!grammar) {
+            return codeText;
+        }
+
+
+        return Prism.highlight(
+            codeText,
+            grammar,
+            language.prism
+        );
+    }
 
 
     return (
+
         <main className="app">
 
 
-            {/* LEFT - CODE EDITOR */}
+            {/* ============================= */}
+            {/* LEFT SIDE */}
+            {/* ============================= */}
 
             <section className="editor-section">
 
@@ -158,9 +427,14 @@ function App() {
 
                     <div>
 
-                        <h2>Code</h2>
+                        <h2>
+                            Code
+                        </h2>
 
-                        <span>C++</span>
+
+                        <span>
+                            {language.name}
+                        </span>
 
                     </div>
 
@@ -182,12 +456,19 @@ function App() {
                             type="radio"
                             name="reviewScope"
                             value="full"
-                            checked={reviewScope === "full"}
+                            checked={
+                                reviewScope === "full"
+                            }
                             onChange={() => {
-                                setReviewScope("full");
+
+                                setReviewScope(
+                                    "full"
+                                );
+
                                 setError("");
                             }}
                         />
+
 
                         <span>
                             Full Code
@@ -202,12 +483,19 @@ function App() {
                             type="radio"
                             name="reviewScope"
                             value="selected"
-                            checked={reviewScope === "selected"}
+                            checked={
+                                reviewScope === "selected"
+                            }
                             onChange={() => {
-                                setReviewScope("selected");
+
+                                setReviewScope(
+                                    "selected"
+                                );
+
                                 setError("");
                             }}
                         />
+
 
                         <span>
                             Selected Code
@@ -218,6 +506,8 @@ function App() {
                 </div>
 
 
+                {/* EDITOR */}
+
                 <div className="editor-container">
 
 
@@ -225,27 +515,33 @@ function App() {
 
                         value={code}
 
-                        onValueChange={code => {
-                            setCode(code);
 
-                            // Code change hone par
-                            // old selection hata do
+                        onValueChange={(newCode) => {
+
+                            setCode(newCode);
+
                             setSelectedCode("");
+
+                            setReview("");
+
                         }}
 
-                        onSelect={handleCodeSelect}
 
-                        highlight={code =>
-                            Prism.highlight(
-                                code,
-                                Prism.languages.javascript,
-                                "javascript"
-                            )
+                        onSelect={
+                            handleCodeSelect
                         }
+
+
+                        highlight={
+                            highlightCode
+                        }
+
 
                         padding={15}
 
+
                         style={{
+
                             fontFamily:
                                 '"Fira Code", "Fira Mono", monospace',
 
@@ -255,21 +551,35 @@ function App() {
 
                             width: "100%",
 
-                            backgroundColor: "#2d2d2d"
+                            backgroundColor:
+                                "#2d2d2d"
+
                         }}
 
                     />
 
 
+                    {/* REVIEW BUTTON */}
+
                     <button
+
                         className="review-button"
-                        onClick={reviewCode}
-                        disabled={loading}
+
+                        onClick={
+                            reviewCode
+                        }
+
+                        disabled={
+                            loading
+                        }
+
                     >
 
-                        {loading
-                            ? "Reviewing..."
-                            : "Review"}
+                        {
+                            loading
+                                ? "Reviewing..."
+                                : "Review"
+                        }
 
                     </button>
 
@@ -280,12 +590,15 @@ function App() {
             </section>
 
 
-            {/* RIGHT - AI REVIEW */}
+            {/* ============================= */}
+            {/* RIGHT SIDE */}
+            {/* ============================= */}
 
             <section className="review-section">
 
 
                 <div className="review-header">
+
 
                     <h2>
                         AI Code Review
@@ -319,6 +632,7 @@ function App() {
                     <div className="loading">
 
                         <div className="loader"></div>
+
 
                         <p>
                             AI is analyzing your code...
@@ -354,20 +668,27 @@ function App() {
 
                             <div className="overall-score">
 
+
                                 <span className="score-label">
+
                                     Overall Score
+
                                 </span>
 
 
                                 <span className="overall-number">
 
-                                    {scores.overall ?? "—"}
+                                    {
+                                        scores.overall ??
+                                        "—"
+                                    }
 
                                     <small>
                                         /10
                                     </small>
 
                                 </span>
+
 
                             </div>
 
@@ -381,8 +702,12 @@ function App() {
                                         Code Quality
                                     </span>
 
+
                                     <strong>
-                                        {scores.codeQuality ?? "—"}/10
+                                        {
+                                            scores.codeQuality ??
+                                            "—"
+                                        }/10
                                     </strong>
 
                                 </div>
@@ -394,8 +719,12 @@ function App() {
                                         Performance
                                     </span>
 
+
                                     <strong>
-                                        {scores.performance ?? "—"}/10
+                                        {
+                                            scores.performance ??
+                                            "—"
+                                        }/10
                                     </strong>
 
                                 </div>
@@ -407,8 +736,12 @@ function App() {
                                         Security
                                     </span>
 
+
                                     <strong>
-                                        {scores.security ?? "—"}/10
+                                        {
+                                            scores.security ??
+                                            "—"
+                                        }/10
                                     </strong>
 
                                 </div>
@@ -420,8 +753,12 @@ function App() {
                                         Readability
                                     </span>
 
+
                                     <strong>
-                                        {scores.readability ?? "—"}/10
+                                        {
+                                            scores.readability ??
+                                            "—"
+                                        }/10
                                     </strong>
 
                                 </div>
@@ -433,8 +770,12 @@ function App() {
                                         Maintainability
                                     </span>
 
+
                                     <strong>
-                                        {scores.maintainability ?? "—"}/10
+                                        {
+                                            scores.maintainability ??
+                                            "—"
+                                        }/10
                                     </strong>
 
                                 </div>
@@ -456,18 +797,22 @@ function App() {
 
                         <div className="review-content">
 
+
                             <Markdown
                                 rehypePlugins={[
                                     rehypeHighlight
                                 ]}
                             >
 
-                                {review.replace(
-                                    /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
-                                    ""
-                                )}
+                                {
+                                    review.replace(
+                                        /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
+                                        ""
+                                    )
+                                }
 
                             </Markdown>
+
 
                         </div>
 
@@ -482,6 +827,7 @@ function App() {
 
                         <div className="empty-review">
 
+
                             <div className="empty-icon">
                                 🤖
                             </div>
@@ -493,9 +839,10 @@ function App() {
 
 
                             <p>
-                                Write or paste your code on the left
-                                and click <b>Review</b>.
+                                Write or paste your code on the left and
+                                click <b>Review</b>.
                             </p>
+
 
                         </div>
 
@@ -508,5 +855,6 @@ function App() {
         </main>
     );
 }
+
 
 export default App;
