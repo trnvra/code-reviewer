@@ -79,28 +79,7 @@ function App() {
         overall
     };
 }
-
-        const getScore = (name) => {
-
-            const regex = new RegExp(
-                name + "\\s*:\\s*\\*?\\*?\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
-                "i"
-            );
-
-            const match = text.match(regex);
-
-            return match ? Number(match[1]) : null;
-        };
-
-        return {
-            codeQuality: getScore("Code Quality"),
-            performance: getScore("Performance"),
-            security: getScore("Security"),
-            readability: getScore("Readability"),
-            maintainability: getScore("Maintainability"),
-            overall: getScore("Overall Score")
-        };
-    
+            
 
 
     async function reviewCode() {
