@@ -7,97 +7,94 @@
 html,
 body,
 #root {
-  width: 100%;
   height: 100%;
+  width: 100%;
 }
 
 body {
   background-color: #111217;
-  font-family: Arial, sans-serif;
+  color: white;
   overflow: hidden;
 }
 
 /* =========================
    MAIN LAYOUT
-========================= */
+   ========================= */
 
 main {
-  width: 100%;
   height: 100vh;
+  width: 100%;
   padding: 1.5rem;
   display: flex;
-  gap: 1.2rem;
+  gap: 1rem;
   background-color: #111217;
   overflow: hidden;
 }
 
 /* =========================
-   LEFT - CODE EDITOR
-   40%
-========================= */
+   LEFT = 40%
+   RIGHT = 60%
+   ========================= */
 
 main .left {
-  flex: 0 0 40%;
   width: 40%;
+  flex: 0 0 40%;
   height: 100%;
   position: relative;
-
-  background-color: #1e1e1e;
-
-  border: 1px solid #333;
-  border-radius: 0.8rem;
-
   overflow: hidden;
+  border-radius: 0.7rem;
+  background-color: #0c0c0c;
+  border: 1px solid #333;
 }
 
-/* Code editor wrapper */
+main .right {
+  width: 60%;
+  flex: 0 0 60%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0.7rem;
+  background-color: #18191f;
+  border: 1px solid #333;
+  padding: 1.5rem 2rem;
+  font-size: 1.05rem;
+  color: #d5d5d5;
+}
+
+/* =========================
+   CODE EDITOR
+   ========================= */
 
 .left .code {
-  width: 100%;
   height: 100%;
+  width: 100%;
+  background-color: #0c0c0c;
 }
-
-/* react-simple-code-editor */
 
 .left .code textarea,
 .left .code pre {
   width: 100% !important;
   height: 100% !important;
-
+  min-width: 0 !important;
   margin: 0 !important;
-  padding: 1.2rem !important;
-
-  border: none !important;
-  outline: none !important;
-
-  background-color: #1e1e1e !important;
-
-  font-family: "Fira Code", "Fira Mono", monospace !important;
-  font-size: 16px !important;
-  line-height: 1.6 !important;
-
-  overflow: auto !important;
+  padding: 1rem !important;
+  border-radius: 0.7rem;
+  background-color: #0c0c0c !important;
 }
 
 /* =========================
    REVIEW BUTTON
-========================= */
+   ========================= */
 
 main .left .review {
   position: absolute;
+  bottom: 1rem;
+  right: 1rem;
 
-  bottom: 1.2rem;
-  right: 1.2rem;
-
-  padding: 0.75rem 1.8rem;
-
-  background: linear-gradient(
-    135deg,
-    #7c5cff,
-    #5b3df5
-  );
-
+  background: linear-gradient(135deg, #7c5cff, #a855f7);
   color: white;
+
+  padding: 0.7rem 1.8rem;
 
   font-size: 1rem;
   font-weight: 600;
@@ -107,20 +104,14 @@ main .left .review {
 
   cursor: pointer;
 
-  box-shadow: 0 6px 20px rgba(92, 61, 245, 0.35);
+  box-shadow: 0 5px 20px rgba(124, 92, 255, 0.35);
 
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
-
-  z-index: 10;
+  transition: all 0.2s ease;
 }
 
 main .left .review:hover {
   transform: translateY(-2px);
-
-  box-shadow: 0 8px 25px rgba(92, 61, 245, 0.5);
+  box-shadow: 0 8px 25px rgba(124, 92, 255, 0.5);
 }
 
 main .left .review:active {
@@ -134,45 +125,15 @@ main .left .review:disabled {
 }
 
 /* =========================
-   RIGHT - AI REPORT
-   60%
-========================= */
-
-main .right {
-  flex: 0 0 60%;
-  width: 60%;
-  height: 100%;
-
-  background-color: #111217;
-
-  border: 1px solid #333;
-  border-radius: 0.8rem;
-
-  padding: 1.5rem 2rem;
-
-  color: #d5d5d5;
-
-  font-size: 1.05rem;
-  line-height: 1.7;
-
-  /* IMPORTANT */
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  min-width: 0;
-}
-
-/* =========================
-   RIGHT SCROLLBAR
-========================= */
+   RIGHT SIDE SCROLL
+   ========================= */
 
 main .right::-webkit-scrollbar {
   width: 8px;
 }
 
 main .right::-webkit-scrollbar-track {
-  background: #17181d;
-  border-radius: 10px;
+  background: #111217;
 }
 
 main .right::-webkit-scrollbar-thumb {
@@ -186,31 +147,28 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    REVIEW HEADER
-========================= */
+   ========================= */
 
 .review-header {
   display: flex;
-
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 1.2rem;
-  padding-bottom: 0.9rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
 
   border-bottom: 1px solid #444;
 }
 
 .review-header h2 {
   margin: 0;
-
   color: #ffffff;
-
   font-size: 1.5rem;
 }
 
 /* =========================
    AI BADGE
-========================= */
+   ========================= */
 
 .ai-badge,
 .demo-badge {
@@ -218,13 +176,13 @@ main .right::-webkit-scrollbar-thumb:hover {
 
   border-radius: 0.5rem;
 
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
 .ai-badge {
-  background-color: rgba(0, 220, 120, 0.15);
-  color: #63f5a6;
+  background-color: rgba(0, 200, 100, 0.15);
+  color: #6cffaa;
 }
 
 .demo-badge {
@@ -234,37 +192,34 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    MARKDOWN CONTENT
-========================= */
+   ========================= */
 
 .review-content {
   width: 100%;
 }
 
 .review-content p {
-  margin-bottom: 1rem;
-
-  color: #d0d0d0;
-
   text-align: left;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  color: #d0d0d0;
 }
 
 .review-content h1,
 .review-content h2,
 .review-content h3 {
-  color: #ffffff;
-
   text-align: left;
-
+  color: #ffffff;
   margin-top: 1.5rem;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.7rem;
 }
 
 .review-content h1 {
-  font-size: 1.7rem;
+  font-size: 1.6rem;
 }
 
 .review-content h2 {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
 }
 
 .review-content h3 {
@@ -274,25 +229,23 @@ main .right::-webkit-scrollbar-thumb:hover {
 .review-content ul,
 .review-content ol {
   padding-left: 1.5rem;
-
   margin-bottom: 1rem;
 }
 
 .review-content li {
   margin-bottom: 0.5rem;
+  line-height: 1.6;
 }
 
 /* =========================
-   REVIEW CODE BLOCKS
-========================= */
+   CODE BLOCKS IN REVIEW
+   ========================= */
 
 .review-content pre {
   width: 100%;
-
   overflow-x: auto;
 
   padding: 1rem;
-
   margin: 1rem 0;
 
   border-radius: 0.6rem;
@@ -302,15 +255,13 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 .review-content pre code {
   font-family: "Fira Code", monospace;
-
   font-size: 0.9rem;
-
   white-space: pre;
 }
 
 /* =========================
    INLINE CODE
-========================= */
+   ========================= */
 
 .review-content :not(pre) > code {
   background-color: #202025;
@@ -326,13 +277,12 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    LOADING
-========================= */
+   ========================= */
 
 .loading {
   height: 70%;
 
   display: flex;
-
   flex-direction: column;
 
   justify-content: center;
@@ -342,11 +292,11 @@ main .right::-webkit-scrollbar-thumb:hover {
 }
 
 .loader {
-  width: 38px;
-  height: 38px;
+  width: 35px;
+  height: 35px;
 
-  border: 4px solid #444;
-  border-top: 4px solid #7c5cff;
+  border: 4px solid #555;
+  border-top: 4px solid #ffffff;
 
   border-radius: 50%;
 
@@ -363,13 +313,12 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    EMPTY REVIEW
-========================= */
+   ========================= */
 
 .empty-review {
   height: 80%;
 
   display: flex;
-
   flex-direction: column;
 
   justify-content: center;
@@ -380,13 +329,11 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 .empty-icon {
   font-size: 3rem;
-
   margin-bottom: 1rem;
 }
 
 .empty-review h3 {
   color: #ffffff;
-
   margin-bottom: 0.5rem;
 }
 
@@ -396,7 +343,7 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    ERROR
-========================= */
+   ========================= */
 
 .error-box {
   padding: 1rem;
@@ -414,7 +361,7 @@ main .right::-webkit-scrollbar-thumb:hover {
 
 /* =========================
    MOBILE
-========================= */
+   ========================= */
 
 @media (max-width: 768px) {
   body {
@@ -422,20 +369,17 @@ main .right::-webkit-scrollbar-thumb:hover {
   }
 
   main {
+    flex-direction: column;
     height: auto;
     min-height: 100vh;
-
-    flex-direction: column;
-
     padding: 1rem;
-
     overflow: visible;
   }
 
   main .left,
   main .right {
     width: 100%;
-    flex: none;
+    flex: 0 0 100%;
   }
 
   main .left {
@@ -444,7 +388,6 @@ main .right::-webkit-scrollbar-thumb:hover {
 
   main .right {
     height: 600px;
-
     padding: 1rem;
   }
 }
