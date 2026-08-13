@@ -243,6 +243,17 @@ function App() {
 }
 
 
+function extractBugDetection(reviewText) {
+
+    const match = reviewText.match(
+        /## 🐛 Bug Detection[\s\S]*?(?=\n## |$)/
+    );
+
+    return match
+        ? match[0]
+        : "";
+}
+
     /* ============================= */
     /* CODE SELECTION */
     /* ============================= */
@@ -371,6 +382,11 @@ function App() {
         review
             ? extractScores(review)
             : null;
+
+    const bugDetection =
+    review
+        ? extractBugDetection(review)
+        : "";
 
 
     /* ============================= */
@@ -773,6 +789,27 @@ function App() {
 
                     )}
 
+                {/* BUG DETECTION */}
+
+                {!loading &&
+                    !error &&
+                    review &&
+                    bugDetection && (
+
+                       <div className="bug-detection">
+
+                            <Markdown
+                                rehypePlugins={[
+                                    rehypeHighlight
+                                ]}
+                            >
+                                {bugDetection}
+                            </Markdown>
+
+                        </div>
+
+                    )}
+
 
                 {/* REVIEW */}
 
@@ -790,10 +827,15 @@ function App() {
                             >
 
                                 {
-                                    review.replace(
-                                        /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
-                                        ""
-                                    )
+                                    review
+                                           .replace(
+                                              /## 🐛 Bug Detection[\s\S]*?(?=\n## |$)/,
+                                              ""
+                                            )
+                                            .replace(
+                                               /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
+                                               ""
+                                            )
                                 }
 
                             </Markdown>
