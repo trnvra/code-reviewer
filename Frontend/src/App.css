@@ -459,3 +459,113 @@ main.app {
         height: 600px;
     }
 }
+
+/* ============================= */
+/* REVIEW SCOPE */
+/* ============================= */
+
+.review-scope {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin: 12px 0 14px;
+    padding: 10px 14px;
+
+    background: #181a21;
+    border: 1px solid #30333d;
+    border-radius: 10px;
+
+    color: #cbd5e1;
+}
+
+.scope-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #a5b4fc;
+    margin-right: 5px;
+}
+
+.scope-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    font-size: 14px;
+    cursor: pointer;
+
+    color: #d1d5db;
+
+    transition: color 0.2s ease;
+}
+
+.scope-option:hover {
+    color: #ffffff;
+}
+
+.scope-option input {
+    width: 15px;
+    height: 15px;
+
+    accent-color: #7c5cff;
+
+    cursor: pointer;
+}
+
+
+/* Selected Code active state */
+
+.scope-option input:checked + span {
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+
+/* ============================= */
+/* REVIEW BUTTON */
+/* ============================= */
+
+.review-button {
+    border: none;
+
+    padding: 13px 28px;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #6d5dfc,
+        #8b5cf6
+    );
+
+    color: white;
+
+    font-size: 16px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(109, 93, 252, 0.30);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.review-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(109, 93, 252, 0.45);
+}
+
+.review-button:active {
+    transform: translateY(0);
+}
+
+.review-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}

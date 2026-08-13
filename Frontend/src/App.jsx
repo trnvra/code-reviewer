@@ -13,66 +13,7 @@ import "./App.css";
 
 const CodeEditor = Editor.default || Editor;
 
-
-// Detect programming language
-function detectLanguage(code) {
-
-    if (!code.trim()) {
-        return "JavaScript";
-    }
-
-    // C++
-    if (
-        /#include\s*<iostream>/.test(code) ||
-        /\busing\s+namespace\s+std/.test(code) ||
-        /\bcout\s*<</.test(code)
-    ) {
-        return "C++";
-    }
-
-    // C
-    if (
-        /#include\s*<stdio\.h>/.test(code) ||
-        /\bprintf\s*\(/.test(code)
-    ) {
-        return "C";
-    }
-
-    // Java
-    if (
-        /\bpublic\s+class\s+\w+/.test(code) ||
-        /\bpublic\s+static\s+void\s+main/.test(code) ||
-        /System\.out\.println\s*\(/.test(code)
-    ) {
-        return "Java";
-    }
-
-    // Python
-    if (
-        /\bdef\s+\w+\s*\(/.test(code) ||
-        /\bprint\s*\(/.test(code) ||
-        /\bif\s+__name__\s*==\s*["']__main__["']/.test(code)
-    ) {
-        return "Python";
-    }
-
-    // JavaScript
-    if (
-        /\b(const|let|var)\s+\w+/.test(code) ||
-        /\bfunction\s+\w+\s*\(/.test(code) ||
-        /\bconsole\.log\s*\(/.test(code) ||
-        /=>/.test(code)
-    ) {
-        return "JavaScript";
-    }
-
-    // Default
-    return "JavaScript";
-}
-
-
 function App() {
-
     const [code, setCode] = useState(`function sum() {
   return a + b
 }`);
@@ -82,11 +23,16 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    // Full Code / Selected Code
+    const [reviewScope, setReviewScope] = useState("full");
+
+    // Editor me selected text
+    const [selectedCode, setSelectedCode] = useState("");
+
 
     // Score ko AI response se nikalne ke liye
     function extractScores(reviewText) {
 
-        // Markdown symbols hata do
         const cleanText = reviewText.replace(/\*/g, "");
 
         const getScore = (name) => {
@@ -112,6 +58,20 @@ function App() {
     }
 
 
+    // Editor me code select hone par selected code save karo
+    function handleCodeSelect(event) {
+
+        const textarea = event.target;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        const selectedText = code.substring(start, end);
+
+        setSelectedCode(selectedText);
+    }
+
+
     async function reviewCode() {
 
         if (!code.trim()) {
@@ -119,22 +79,48 @@ function App() {
             return;
         }
 
+
+        // Agar Selected Code mode hai
+        // to selected code hona compulsory hai
+        if (reviewScope === "selected" && !selectedCode.trim()) {
+
+            setError(
+                "Please select some code first for Selected Code Review."
+            );
+
+            return;
+        }
+
+
         setLoading(true);
         setError("");
         setReview("");
         setMode("");
 
+
         try {
+
+            // AI ko kya bhejna hai?
+            const codeToReview =
+                reviewScope === "selected"
+                    ? selectedCode
+                    : code;
+
 
             const response = await axios.post(
                 "https://code-reviewer-s0ya.onrender.com/ai/get-review",
-                { code }
+                {
+                    code: codeToReview
+                }
             );
+
 
             console.log("FULL RESPONSE:", response.data);
 
+
             setReview(response.data.review);
             setMode(response.data.mode);
+
 
         } catch (error) {
 
@@ -145,6 +131,7 @@ function App() {
                 "Something went wrong while reviewing the code."
             );
 
+
         } finally {
 
             setLoading(false);
@@ -153,36 +140,101 @@ function App() {
     }
 
 
-    // Current code ki language detect karo
-    const language = detectLanguage(code);
-
-    const scores = review ? extractScores(review) : null;
+    const scores = review
+        ? extractScores(review)
+        : null;
 
 
     return (
         <main className="app">
 
+
             {/* LEFT - CODE EDITOR */}
 
             <section className="editor-section">
 
+
                 <div className="editor-header">
 
                     <div>
+
                         <h2>Code</h2>
 
-                        {/* Detected language */}
-                        <span>{language}</span>
+                        <span>C++</span>
+
                     </div>
+
+                </div>
+
+
+                {/* REVIEW SCOPE */}
+
+                <div className="review-scope">
+
+                    <span className="scope-title">
+                        Review Scope
+                    </span>
+
+
+                    <label className="scope-option">
+
+                        <input
+                            type="radio"
+                            name="reviewScope"
+                            value="full"
+                            checked={reviewScope === "full"}
+                            onChange={() => {
+                                setReviewScope("full");
+                                setError("");
+                            }}
+                        />
+
+                        <span>
+                            Full Code
+                        </span>
+
+                    </label>
+
+
+                    <label className="scope-option">
+
+                        <input
+                            type="radio"
+                            name="reviewScope"
+                            value="selected"
+                            checked={reviewScope === "selected"}
+                            onChange={() => {
+                                setReviewScope("selected");
+                                setError("");
+                            }}
+                        />
+
+                        <span>
+                            Selected Code
+                        </span>
+
+                    </label>
 
                 </div>
 
 
                 <div className="editor-container">
 
+
                     <CodeEditor
+
                         value={code}
-                        onValueChange={code => setCode(code)}
+
+                        onValueChange={code => {
+                            setCode(code);
+
+                            // Code change hone par
+                            // old selection hata do
+                            setSelectedCode("");
+                        }}
+
+                        onSelect={handleCodeSelect}
+
                         highlight={code =>
                             Prism.highlight(
                                 code,
@@ -190,15 +242,22 @@ function App() {
                                 "javascript"
                             )
                         }
+
                         padding={15}
+
                         style={{
                             fontFamily:
                                 '"Fira Code", "Fira Mono", monospace',
+
                             fontSize: 16,
+
                             minHeight: "500px",
+
                             width: "100%",
+
                             backgroundColor: "#2d2d2d"
                         }}
+
                     />
 
 
@@ -207,10 +266,16 @@ function App() {
                         onClick={reviewCode}
                         disabled={loading}
                     >
-                        {loading ? "Reviewing..." : "Review"}
+
+                        {loading
+                            ? "Reviewing..."
+                            : "Review"}
+
                     </button>
 
+
                 </div>
+
 
             </section>
 
@@ -219,20 +284,29 @@ function App() {
 
             <section className="review-section">
 
+
                 <div className="review-header">
 
-                    <h2>AI Code Review</h2>
+                    <h2>
+                        AI Code Review
+                    </h2>
+
 
                     {mode === "ai" && (
+
                         <span className="ai-badge">
                             🟢 AI Review
                         </span>
+
                     )}
 
+
                     {mode === "demo" && (
+
                         <span className="demo-badge">
                             🟡 Demo / Fallback
                         </span>
+
                     )}
 
                 </div>
@@ -241,6 +315,7 @@ function App() {
                 {/* LOADING */}
 
                 {loading && (
+
                     <div className="loading">
 
                         <div className="loader"></div>
@@ -250,130 +325,185 @@ function App() {
                         </p>
 
                     </div>
+
                 )}
 
 
                 {/* ERROR */}
 
                 {error && (
+
                     <div className="error-box">
+
                         ❌ {error}
+
                     </div>
+
                 )}
 
 
                 {/* SCORE */}
 
-                {!loading && !error && review && scores && (
+                {!loading &&
+                    !error &&
+                    review &&
+                    scores && (
 
-                    <div className="score-section">
+                        <div className="score-section">
 
-                        <div className="overall-score">
 
-                            <span className="score-label">
-                                Overall Score
-                            </span>
+                            <div className="overall-score">
 
-                            <span className="overall-number">
-                                {scores.overall ?? "—"}
-                                <small>/10</small>
-                            </span>
+                                <span className="score-label">
+                                    Overall Score
+                                </span>
+
+
+                                <span className="overall-number">
+
+                                    {scores.overall ?? "—"}
+
+                                    <small>
+                                        /10
+                                    </small>
+
+                                </span>
+
+                            </div>
+
+
+                            <div className="score-grid">
+
+
+                                <div className="score-card">
+
+                                    <span>
+                                        Code Quality
+                                    </span>
+
+                                    <strong>
+                                        {scores.codeQuality ?? "—"}/10
+                                    </strong>
+
+                                </div>
+
+
+                                <div className="score-card">
+
+                                    <span>
+                                        Performance
+                                    </span>
+
+                                    <strong>
+                                        {scores.performance ?? "—"}/10
+                                    </strong>
+
+                                </div>
+
+
+                                <div className="score-card">
+
+                                    <span>
+                                        Security
+                                    </span>
+
+                                    <strong>
+                                        {scores.security ?? "—"}/10
+                                    </strong>
+
+                                </div>
+
+
+                                <div className="score-card">
+
+                                    <span>
+                                        Readability
+                                    </span>
+
+                                    <strong>
+                                        {scores.readability ?? "—"}/10
+                                    </strong>
+
+                                </div>
+
+
+                                <div className="score-card">
+
+                                    <span>
+                                        Maintainability
+                                    </span>
+
+                                    <strong>
+                                        {scores.maintainability ?? "—"}/10
+                                    </strong>
+
+                                </div>
+
+
+                            </div>
+
 
                         </div>
 
-
-                        <div className="score-grid">
-
-                            <div className="score-card">
-                                <span>Code Quality</span>
-                                <strong>
-                                    {scores.codeQuality ?? "—"}/10
-                                </strong>
-                            </div>
-
-
-                            <div className="score-card">
-                                <span>Performance</span>
-                                <strong>
-                                    {scores.performance ?? "—"}/10
-                                </strong>
-                            </div>
-
-
-                            <div className="score-card">
-                                <span>Security</span>
-                                <strong>
-                                    {scores.security ?? "—"}/10
-                                </strong>
-                            </div>
-
-
-                            <div className="score-card">
-                                <span>Readability</span>
-                                <strong>
-                                    {scores.readability ?? "—"}/10
-                                </strong>
-                            </div>
-
-
-                            <div className="score-card">
-                                <span>Maintainability</span>
-                                <strong>
-                                    {scores.maintainability ?? "—"}/10
-                                </strong>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                )}
+                    )}
 
 
                 {/* REVIEW */}
 
-                {!loading && !error && review && (
+                {!loading &&
+                    !error &&
+                    review && (
 
-                    <div className="review-content">
+                        <div className="review-content">
 
-                        <Markdown
-                            rehypePlugins={[rehypeHighlight]}
-                        >
-                            {review.replace(
-                                /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
-                                ""
-                            )}
-                        </Markdown>
+                            <Markdown
+                                rehypePlugins={[
+                                    rehypeHighlight
+                                ]}
+                            >
 
-                    </div>
+                                {review.replace(
+                                    /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
+                                    ""
+                                )}
 
-                )}
+                            </Markdown>
+
+                        </div>
+
+                    )}
 
 
                 {/* EMPTY */}
 
-                {!loading && !error && !review && (
+                {!loading &&
+                    !error &&
+                    !review && (
 
-                    <div className="empty-review">
+                        <div className="empty-review">
 
-                        <div className="empty-icon">
-                            🤖
+                            <div className="empty-icon">
+                                🤖
+                            </div>
+
+
+                            <h3>
+                                Ready to review your code
+                            </h3>
+
+
+                            <p>
+                                Write or paste your code on the left
+                                and click <b>Review</b>.
+                            </p>
+
                         </div>
 
-                        <h3>
-                            Ready to review your code
-                        </h3>
+                    )}
 
-                        <p>
-                            Write or paste your code on the left and
-                            click <b>Review</b>.
-                        </p>
-
-                    </div>
-
-                )}
 
             </section>
+
 
         </main>
     );
