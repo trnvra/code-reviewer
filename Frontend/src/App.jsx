@@ -13,7 +13,66 @@ import "./App.css";
 
 const CodeEditor = Editor.default || Editor;
 
+
+// Detect programming language
+function detectLanguage(code) {
+
+    if (!code.trim()) {
+        return "JavaScript";
+    }
+
+    // C++
+    if (
+        /#include\s*<iostream>/.test(code) ||
+        /\busing\s+namespace\s+std/.test(code) ||
+        /\bcout\s*<</.test(code)
+    ) {
+        return "C++";
+    }
+
+    // C
+    if (
+        /#include\s*<stdio\.h>/.test(code) ||
+        /\bprintf\s*\(/.test(code)
+    ) {
+        return "C";
+    }
+
+    // Java
+    if (
+        /\bpublic\s+class\s+\w+/.test(code) ||
+        /\bpublic\s+static\s+void\s+main/.test(code) ||
+        /System\.out\.println\s*\(/.test(code)
+    ) {
+        return "Java";
+    }
+
+    // Python
+    if (
+        /\bdef\s+\w+\s*\(/.test(code) ||
+        /\bprint\s*\(/.test(code) ||
+        /\bif\s+__name__\s*==\s*["']__main__["']/.test(code)
+    ) {
+        return "Python";
+    }
+
+    // JavaScript
+    if (
+        /\b(const|let|var)\s+\w+/.test(code) ||
+        /\bfunction\s+\w+\s*\(/.test(code) ||
+        /\bconsole\.log\s*\(/.test(code) ||
+        /=>/.test(code)
+    ) {
+        return "JavaScript";
+    }
+
+    // Default
+    return "JavaScript";
+}
+
+
 function App() {
+
     const [code, setCode] = useState(`function sum() {
   return a + b
 }`);
@@ -23,33 +82,35 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+
     // Score ko AI response se nikalne ke liye
     function extractScores(reviewText) {
 
-    // Markdown symbols hata do
-    const cleanText = reviewText.replace(/\*/g, "");
+        // Markdown symbols hata do
+        const cleanText = reviewText.replace(/\*/g, "");
 
-    const getScore = (name) => {
+        const getScore = (name) => {
 
-        const regex = new RegExp(
-            name + "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
-            "i"
-        );
+            const regex = new RegExp(
+                name + "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
+                "i"
+            );
 
-        const match = cleanText.match(regex);
+            const match = cleanText.match(regex);
 
-        return match ? Number(match[1]) : null;
-    };
+            return match ? Number(match[1]) : null;
+        };
 
-    return {
-        codeQuality: getScore("Code Quality"),
-        performance: getScore("Performance"),
-        security: getScore("Security"),
-        readability: getScore("Readability"),
-        maintainability: getScore("Maintainability"),
-        overall: getScore("Overall Score")
-    };
-}
+        return {
+            codeQuality: getScore("Code Quality"),
+            performance: getScore("Performance"),
+            security: getScore("Security"),
+            readability: getScore("Readability"),
+            maintainability: getScore("Maintainability"),
+            overall: getScore("Overall Score")
+        };
+    }
+
 
     async function reviewCode() {
 
@@ -92,6 +153,9 @@ function App() {
     }
 
 
+    // Current code ki language detect karo
+    const language = detectLanguage(code);
+
     const scores = review ? extractScores(review) : null;
 
 
@@ -106,7 +170,9 @@ function App() {
 
                     <div>
                         <h2>Code</h2>
-                        <span>JavaScript</span>
+
+                        {/* Detected language */}
+                        <span>{language}</span>
                     </div>
 
                 </div>
