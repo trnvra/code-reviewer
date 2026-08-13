@@ -214,49 +214,33 @@ function App() {
 
     function extractScores(reviewText) {
 
-        const cleanText = reviewText.replace(/\*/g, "");
+    const cleanText = reviewText
+        .replace(/\*/g, "")
+        .replace(/#/g, "")
+        .trim();
 
+    const getScore = (name) => {
 
-        const getScore = (name) => {
+        const regex = new RegExp(
+            name +
+            "\\s*(?::|-)?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:/\\s*10|out\\s*of\\s*10)",
+            "i"
+        );
 
-            const regex = new RegExp(
-                name +
-                "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
-                "i"
-            );
+        const match = cleanText.match(regex);
 
+        return match ? Number(match[1]) : null;
+    };
 
-            const match = cleanText.match(regex);
-
-
-            return match
-                ? Number(match[1])
-                : null;
-        };
-
-
-        return {
-
-            codeQuality:
-                getScore("Code Quality"),
-
-            performance:
-                getScore("Performance"),
-
-            security:
-                getScore("Security"),
-
-            readability:
-                getScore("Readability"),
-
-            maintainability:
-                getScore("Maintainability"),
-
-            overall:
-                getScore("Overall Score")
-
-        };
-    }
+    return {
+        codeQuality: getScore("Code Quality"),
+        performance: getScore("Performance"),
+        security: getScore("Security"),
+        readability: getScore("Readability"),
+        maintainability: getScore("Maintainability"),
+        overall: getScore("Overall Score")
+    };
+}
 
 
     /* ============================= */
