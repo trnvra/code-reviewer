@@ -23,6 +23,32 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    // Score ko AI response se nikalne ke liye
+    function extractScores(text) {
+
+        const getScore = (name) => {
+
+            const regex = new RegExp(
+                name + "\\s*:\\s*\\*?\\*?\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
+                "i"
+            );
+
+            const match = text.match(regex);
+
+            return match ? Number(match[1]) : null;
+        };
+
+        return {
+            codeQuality: getScore("Code Quality"),
+            performance: getScore("Performance"),
+            security: getScore("Security"),
+            readability: getScore("Readability"),
+            maintainability: getScore("Maintainability"),
+            overall: getScore("Overall Score")
+        };
+    }
+
+
     async function reviewCode() {
 
         if (!code.trim()) {
@@ -63,15 +89,26 @@ function App() {
         }
     }
 
+
+    const scores = review ? extractScores(review) : null;
+
+
     return (
         <main className="app">
+
+            {/* LEFT - CODE EDITOR */}
 
             <section className="editor-section">
 
                 <div className="editor-header">
-                    <h2>Code</h2>
-                    <span>JavaScript</span>
+
+                    <div>
+                        <h2>Code</h2>
+                        <span>JavaScript</span>
+                    </div>
+
                 </div>
+
 
                 <div className="editor-container">
 
@@ -96,6 +133,7 @@ function App() {
                         }}
                     />
 
+
                     <button
                         className="review-button"
                         onClick={reviewCode}
@@ -108,6 +146,8 @@ function App() {
 
             </section>
 
+
+            {/* RIGHT - AI REVIEW */}
 
             <section className="review-section">
 
@@ -130,13 +170,22 @@ function App() {
                 </div>
 
 
+                {/* LOADING */}
+
                 {loading && (
                     <div className="loading">
+
                         <div className="loader"></div>
-                        <p>AI is analyzing your code...</p>
+
+                        <p>
+                            AI is analyzing your code...
+                        </p>
+
                     </div>
                 )}
 
+
+                {/* ERROR */}
 
                 {error && (
                     <div className="error-box">
@@ -145,27 +194,107 @@ function App() {
                 )}
 
 
+                {/* SCORE */}
+
+                {!loading && !error && review && scores && (
+
+                    <div className="score-section">
+
+                        <div className="overall-score">
+
+                            <span className="score-label">
+                                Overall Score
+                            </span>
+
+                            <span className="overall-number">
+                                {scores.overall ?? "—"}
+                                <small>/10</small>
+                            </span>
+
+                        </div>
+
+
+                        <div className="score-grid">
+
+                            <div className="score-card">
+                                <span>Code Quality</span>
+                                <strong>
+                                    {scores.codeQuality ?? "—"}/10
+                                </strong>
+                            </div>
+
+
+                            <div className="score-card">
+                                <span>Performance</span>
+                                <strong>
+                                    {scores.performance ?? "—"}/10
+                                </strong>
+                            </div>
+
+
+                            <div className="score-card">
+                                <span>Security</span>
+                                <strong>
+                                    {scores.security ?? "—"}/10
+                                </strong>
+                            </div>
+
+
+                            <div className="score-card">
+                                <span>Readability</span>
+                                <strong>
+                                    {scores.readability ?? "—"}/10
+                                </strong>
+                            </div>
+
+
+                            <div className="score-card">
+                                <span>Maintainability</span>
+                                <strong>
+                                    {scores.maintainability ?? "—"}/10
+                                </strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )}
+
+
+                {/* REVIEW */}
+
                 {!loading && !error && review && (
+
                     <div className="review-content">
 
                         <Markdown
                             rehypePlugins={[rehypeHighlight]}
                         >
-                            {review}
+                            {review.replace(
+                                /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
+                                ""
+                            )}
                         </Markdown>
 
                     </div>
+
                 )}
 
 
+                {/* EMPTY */}
+
                 {!loading && !error && !review && (
+
                     <div className="empty-review">
 
                         <div className="empty-icon">
                             🤖
                         </div>
 
-                        <h3>Ready to review your code</h3>
+                        <h3>
+                            Ready to review your code
+                        </h3>
 
                         <p>
                             Write or paste your code on the left and
@@ -173,6 +302,7 @@ function App() {
                         </p>
 
                     </div>
+
                 )}
 
             </section>

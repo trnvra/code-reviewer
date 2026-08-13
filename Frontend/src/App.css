@@ -1,393 +1,461 @@
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 html,
 body,
 #root {
-  height: 100%;
-  width: 100%;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
-  background-color: #111217;
-  color: white;
-  overflow: hidden;
+    background: #111217;
+    font-family: Arial, sans-serif;
 }
 
 /* =========================
    MAIN LAYOUT
-   ========================= */
+========================= */
 
-main {
-  height: 100vh;
-  width: 100%;
-  padding: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  background-color: #111217;
-  overflow: hidden;
+main.app {
+    width: 100%;
+    height: 100vh;
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    background: #111217;
+    overflow: hidden;
 }
 
 /* =========================
-   LEFT = 40%
-   RIGHT = 60%
-   ========================= */
+   LEFT - CODE EDITOR
+   40%
+========================= */
 
-main .left {
-  width: 40%;
-  flex: 0 0 40%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  border-radius: 0.7rem;
-  background-color: #0c0c0c;
-  border: 1px solid #333;
+.editor-section {
+    flex: 0 0 40%;
+    width: 40%;
+    height: 100%;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
 }
 
-main .right {
-  width: 60%;
-  flex: 0 0 60%;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-radius: 0.7rem;
-  background-color: #18191f;
-  border: 1px solid #333;
-  padding: 1.5rem 2rem;
-  font-size: 1.05rem;
-  color: #d5d5d5;
+/* Code heading */
+
+.editor-header {
+    flex-shrink: 0;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.editor-header h2 {
+    color: white;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.editor-header span {
+    color: #9ca3af;
+    font-size: 20px;
+}
+
+/* Editor box */
+
+.editor-container {
+    position: relative;
+
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+
+    background: #2d2d2d;
+    border-radius: 8px;
+    overflow: hidden;
+
+    border: 1px solid #3f3f46;
+}
+
+/* react-simple-code-editor */
+
+.editor-container textarea,
+.editor-container pre {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+
+    margin: 0 !important;
+    padding: 15px !important;
+
+    font-family: "Fira Code", "Fira Mono", monospace !important;
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+
+    box-sizing: border-box !important;
+}
+
+/* Review button */
+
+.review-button {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+
+    padding: 10px 22px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+
+    transition: 0.2s ease;
+}
+
+.review-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+}
+
+.review-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* =========================
-   CODE EDITOR
-   ========================= */
+   RIGHT - AI REVIEW
+   60%
+========================= */
 
-.left .code {
-  height: 100%;
-  width: 100%;
-  background-color: #0c0c0c;
-}
+.review-section {
+    flex: 0 0 60%;
+    width: 60%;
+    height: 100%;
 
-.left .code textarea,
-.left .code pre {
-  width: 100% !important;
-  height: 100% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 1rem !important;
-  border-radius: 0.7rem;
-  background-color: #0c0c0c !important;
-}
+    min-width: 0;
+    min-height: 0;
 
-/* =========================
-   REVIEW BUTTON
-   ========================= */
+    display: flex;
+    flex-direction: column;
 
-main .left .review {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
+    color: #d5d5d5;
 
-  background: linear-gradient(135deg, #7c5cff, #a855f7);
-  color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-  padding: 0.7rem 1.8rem;
-
-  font-size: 1rem;
-  font-weight: 600;
-
-  border: none;
-  border-radius: 0.6rem;
-
-  cursor: pointer;
-
-  box-shadow: 0 5px 20px rgba(124, 92, 255, 0.35);
-
-  transition: all 0.2s ease;
-}
-
-main .left .review:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(124, 92, 255, 0.5);
-}
-
-main .left .review:active {
-  transform: translateY(0);
-}
-
-main .left .review:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* =========================
-   RIGHT SIDE SCROLL
-   ========================= */
-
-main .right::-webkit-scrollbar {
-  width: 8px;
-}
-
-main .right::-webkit-scrollbar-track {
-  background: #111217;
-}
-
-main .right::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 10px;
-}
-
-main .right::-webkit-scrollbar-thumb:hover {
-  background: #777;
+    padding: 0 5px 30px 0;
 }
 
 /* =========================
    REVIEW HEADER
-   ========================= */
+========================= */
 
 .review-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    flex-shrink: 0;
 
-  margin-bottom: 1rem;
-  padding-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-  border-bottom: 1px solid #444;
+    padding: 10px 0 15px;
+
+    margin-bottom: 20px;
+
+    border-bottom: 1px solid #444;
 }
 
 .review-header h2 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 1.5rem;
+    color: white;
+    font-size: 30px;
 }
 
 /* =========================
    AI BADGE
-   ========================= */
-
-.ai-badge,
-.demo-badge {
-  padding: 0.45rem 0.8rem;
-
-  border-radius: 0.5rem;
-
-  font-size: 0.8rem;
-  font-weight: 600;
-}
+========================= */
 
 .ai-badge {
-  background-color: rgba(0, 200, 100, 0.15);
-  color: #6cffaa;
+    padding: 10px 18px;
+
+    border-radius: 10px;
+
+    background: rgba(0, 200, 100, 0.15);
+    color: #6cffaa;
+
+    font-size: 15px;
+    font-weight: 600;
 }
 
 .demo-badge {
-  background-color: rgba(255, 190, 0, 0.15);
-  color: #ffd35a;
+    padding: 10px 18px;
+
+    border-radius: 10px;
+
+    background: rgba(255, 190, 0, 0.15);
+    color: #ffd35a;
+
+    font-size: 15px;
+    font-weight: 600;
 }
 
 /* =========================
-   MARKDOWN CONTENT
-   ========================= */
+   REVIEW CONTENT
+========================= */
 
 .review-content {
-  width: 100%;
+    width: 100%;
+    min-width: 0;
 }
 
 .review-content p {
-  text-align: left;
-  line-height: 1.7;
-  margin-bottom: 1rem;
-  color: #d0d0d0;
+    margin-bottom: 20px;
+    color: #d5d5d5;
+    line-height: 1.8;
+    font-size: 18px;
 }
 
 .review-content h1,
 .review-content h2,
 .review-content h3 {
-  text-align: left;
-  color: #ffffff;
-  margin-top: 1.5rem;
-  margin-bottom: 0.7rem;
+    color: white;
+    margin-top: 25px;
+    margin-bottom: 15px;
 }
 
 .review-content h1 {
-  font-size: 1.6rem;
+    font-size: 28px;
 }
 
 .review-content h2 {
-  font-size: 1.35rem;
+    font-size: 25px;
 }
 
 .review-content h3 {
-  font-size: 1.15rem;
+    font-size: 21px;
 }
+
+/* Lists */
 
 .review-content ul,
 .review-content ol {
-  padding-left: 1.5rem;
-  margin-bottom: 1rem;
+    padding-left: 30px;
+    margin-bottom: 20px;
 }
 
 .review-content li {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+    margin-bottom: 10px;
+    line-height: 1.7;
+}
+
+/* Horizontal line */
+
+.review-content hr {
+    border: none;
+    border-top: 1px solid #444;
+    margin: 25px 0;
 }
 
 /* =========================
-   CODE BLOCKS IN REVIEW
-   ========================= */
+   CODE BLOCKS INSIDE REVIEW
+========================= */
 
 .review-content pre {
-  width: 100%;
-  overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
 
-  padding: 1rem;
-  margin: 1rem 0;
+    overflow-x: auto;
 
-  border-radius: 0.6rem;
+    padding: 15px;
+    margin: 20px 0;
 
-  background-color: #1e1e1e !important;
+    border-radius: 8px;
+
+    background: #1e1e1e !important;
 }
 
 .review-content pre code {
-  font-family: "Fira Code", monospace;
-  font-size: 0.9rem;
-  white-space: pre;
+    font-family: "Fira Code", "Fira Mono", monospace;
+    font-size: 14px;
+    white-space: pre;
+}
+
+/* Inline code */
+
+.review-content :not(pre) > code {
+    background: #202025;
+
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    color: #ffffff;
+
+    font-family: "Fira Code", monospace;
 }
 
 /* =========================
-   INLINE CODE
-   ========================= */
+   SCORE CARDS
+========================= */
 
-.review-content :not(pre) > code {
-  background-color: #202025;
-
-  padding: 0.15rem 0.4rem;
-
-  border-radius: 0.3rem;
-
-  color: #ffffff;
-
-  font-family: "Fira Code", monospace;
+.score-container {
+    width: 100%;
 }
 
 /* =========================
    LOADING
-   ========================= */
+========================= */
 
 .loading {
-  height: 70%;
+    flex: 1;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: center;
 
-  color: #bbbbbb;
+    color: #bbbbbb;
 }
 
 .loader {
-  width: 35px;
-  height: 35px;
+    width: 40px;
+    height: 40px;
 
-  border: 4px solid #555;
-  border-top: 4px solid #ffffff;
+    border: 4px solid #444;
+    border-top: 4px solid #8b5cf6;
 
-  border-radius: 50%;
+    border-radius: 50%;
 
-  animation: spin 0.8s linear infinite;
+    animation: spin 0.8s linear infinite;
 
-  margin-bottom: 1rem;
+    margin-bottom: 15px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* =========================
    EMPTY REVIEW
-   ========================= */
+========================= */
 
 .empty-review {
-  height: 80%;
+    flex: 1;
 
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 
-  justify-content: center;
-  align-items: center;
+    justify-content: center;
+    align-items: center;
 
-  text-align: center;
+    text-align: center;
+
+    min-height: 0;
 }
 
 .empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+    font-size: 60px;
+    margin-bottom: 15px;
 }
 
 .empty-review h3 {
-  color: #ffffff;
-  margin-bottom: 0.5rem;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
 .empty-review p {
-  color: #999;
+    color: #999;
+    font-size: 18px;
 }
 
 /* =========================
    ERROR
-   ========================= */
+========================= */
 
 .error-box {
-  padding: 1rem;
+    padding: 15px;
 
-  margin-top: 1rem;
+    margin-top: 10px;
 
-  border-radius: 0.6rem;
+    border-radius: 8px;
 
-  background-color: rgba(255, 70, 70, 0.12);
+    background: rgba(255, 70, 70, 0.12);
 
-  border: 1px solid rgba(255, 70, 70, 0.3);
+    border: 1px solid rgba(255, 70, 70, 0.3);
 
-  color: #ff8f8f;
+    color: #ff8f8f;
+}
+
+/* =========================
+   RIGHT SIDE SCROLLBAR
+========================= */
+
+.review-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.review-section::-webkit-scrollbar-track {
+    background: #1b1c21;
+}
+
+.review-section::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 10px;
+}
+
+.review-section::-webkit-scrollbar-thumb:hover {
+    background: #777;
 }
 
 /* =========================
    MOBILE
-   ========================= */
+========================= */
 
 @media (max-width: 768px) {
-  body {
-    overflow: auto;
-  }
 
-  main {
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-    padding: 1rem;
-    overflow: visible;
-  }
+    html,
+    body,
+    #root {
+        overflow: auto;
+    }
 
-  main .left,
-  main .right {
-    width: 100%;
-    flex: 0 0 100%;
-  }
+    main.app {
+        height: auto;
+        min-height: 100vh;
 
-  main .left {
-    height: 500px;
-  }
+        flex-direction: column;
 
-  main .right {
-    height: 600px;
-    padding: 1rem;
-  }
+        padding: 15px;
+
+        overflow: visible;
+    }
+
+    .editor-section,
+    .review-section {
+        width: 100%;
+        flex: none;
+    }
+
+    .editor-section {
+        height: 500px;
+    }
+
+    .review-section {
+        height: 600px;
+    }
 }
