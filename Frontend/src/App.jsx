@@ -24,10 +24,10 @@ function App() {
     const [error, setError] = useState("");
 
     // Score ko AI response se nikalne ke liye
-    function extractScores(text) {
+    function extractScores(reviewText) {
 
-    // Markdown ** ko remove kar rahe hain
-    const cleanText = text.replace(/\*\*/g, "");
+    // Markdown symbols hata do
+    const cleanText = reviewText.replace(/\*/g, "");
 
     const getScore = (name) => {
 
@@ -41,46 +41,15 @@ function App() {
         return match ? Number(match[1]) : null;
     };
 
-    const codeQuality = getScore("Code Quality");
-    const performance = getScore("Performance");
-    const security = getScore("Security");
-    const readability = getScore("Readability");
-    const maintainability = getScore("Maintainability");
-
-    let overall = getScore("Overall Score");
-
-    // Agar AI Overall Score nahi deta,
-    // to 5 scores ka average calculate karenge
-    if (overall === null) {
-
-        const scores = [
-            codeQuality,
-            performance,
-            security,
-            readability,
-            maintainability
-        ].filter(score => score !== null);
-
-        if (scores.length > 0) {
-            overall =
-                scores.reduce((sum, score) => sum + score, 0) /
-                scores.length;
-
-            overall = Number(overall.toFixed(1));
-        }
-    }
-
     return {
-        codeQuality,
-        performance,
-        security,
-        readability,
-        maintainability,
-        overall
+        codeQuality: getScore("Code Quality"),
+        performance: getScore("Performance"),
+        security: getScore("Security"),
+        readability: getScore("Readability"),
+        maintainability: getScore("Maintainability"),
+        overall: getScore("Overall Score")
     };
 }
-            
-
 
     async function reviewCode() {
 
