@@ -43,7 +43,30 @@ Do not guess complexity. Base it on the actual code.
 
 ## 🔐 Security
 
-No major security vulnerabilities were identified in this example.
+Analyze the code for actual security vulnerabilities and unsafe practices.
+
+Always use this format:
+
+If security issues are found:
+
+### Security Issue 1
+- Severity: High / Medium / Low
+- Location: Mention the exact line or code section
+- Problem: Explain the security vulnerability
+- Risk: Explain what could happen because of it
+- Fix: Give the practical fix
+
+If multiple security issues exist, continue with Security Issue 2, Security Issue 3, etc.
+
+If no security issues are found, write:
+
+No security vulnerabilities found.
+
+Important:
+- Only report real or strong potential security vulnerabilities.
+- Do not treat normal coding style or performance issues as security problems.
+- Consider issues such as injection, unsafe input handling, hardcoded secrets, authentication/authorization problems, insecure file handling, buffer overflows, memory safety, and exposed sensitive data when relevant.
+- Do not invent vulnerabilities that are not supported by the code.
 
 ## ✅ Good Things
 
