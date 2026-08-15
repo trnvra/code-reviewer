@@ -252,7 +252,8 @@ ${code}
 
     } catch (error) {
         console.error("AI Fix Code Error:", error);
-
+        console.error("ERROR MESSAGE:", error.message);
+        console.error("ERROR RESPONSE:", error.response?.data);
         return res.status(200).json({
             success: true,
             mode: "demo",
