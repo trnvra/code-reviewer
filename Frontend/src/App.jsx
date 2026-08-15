@@ -237,6 +237,8 @@ function App() {
         setExplainLoading(true);
         setExplainError("");
         setExplanation("");
+        setReview("");
+        setMode("");
 
         try {
 

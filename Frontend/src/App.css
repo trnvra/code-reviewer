@@ -569,3 +569,142 @@ main.app {
     cursor: not-allowed;
     transform: none;
 }
+
+/* ============================= */
+/* EXPLAIN CODE BUTTON */
+/* ============================= */
+
+.explain-button {
+    position: absolute;
+    bottom: 15px;
+    right: 150px;
+
+    padding: 13px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #a855f7
+    );
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(139, 92, 246, 0.30);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.explain-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(139, 92, 246, 0.45);
+}
+
+.explain-button:active {
+    transform: translateY(0);
+}
+
+.explain-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* ============================= */
+/* CODE EXPLANATION */
+/* ============================= */
+
+.explanation-content {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 25px;
+}
+
+.explanation-content p {
+    margin-bottom: 20px;
+    color: #d5d5d5;
+    line-height: 1.8;
+    font-size: 18px;
+}
+
+.explanation-content h1,
+.explanation-content h2,
+.explanation-content h3 {
+    color: white;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.explanation-content h1 {
+    font-size: 28px;
+}
+
+.explanation-content h2 {
+    font-size: 25px;
+}
+
+.explanation-content h3 {
+    font-size: 21px;
+}
+
+.explanation-content ul,
+.explanation-content ol {
+    padding-left: 30px;
+    margin-bottom: 20px;
+}
+
+.explanation-content li {
+    margin-bottom: 10px;
+    line-height: 1.7;
+}
+
+.explanation-content pre {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+
+    padding: 15px;
+    margin: 20px 0;
+
+    border-radius: 8px;
+    background: #1e1e1e !important;
+}
+
+.explanation-content pre code {
+    font-family: "Fira Code", "Fira Mono", monospace;
+    font-size: 14px;
+    white-space: pre;
+}
+
+
+/* ============================= */
+/* MOBILE BUTTONS */
+/* ============================= */
+
+@media (max-width: 768px) {
+
+    .explain-button {
+        right: 140px;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .review-button {
+        right: 15px;
+        padding: 12px 20px;
+    }
+}
