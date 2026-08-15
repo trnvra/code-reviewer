@@ -199,3 +199,64 @@ ${code}
         });
     }
 };
+
+module.exports.fixCode = async (req, res) => {
+    try {
+        const code = req.body.code;
+        const language = req.body.language || "Unknown";
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: "code is required"
+            });
+        }
+
+        const prompt = `
+Fix the following ${language} code.
+
+Use exactly this structure:
+
+## 🔧 Fixed Code
+
+### Problems Fixed
+Explain the problems found in the code.
+
+### Improved Code
+Provide the complete corrected code.
+
+### Explanation
+Explain what was changed and why.
+
+Important:
+- Focus on fixing the existing code.
+- Do not give a review score.
+- Do not unnecessarily change the logic.
+- Keep the same programming language.
+- Provide complete corrected code.
+
+Code:
+
+\`\`\`${language}
+${code}
+\`\`\`
+`;
+
+        const response = await aiService(prompt);
+
+        return res.status(200).json({
+            success: true,
+            mode: "ai",
+            fixedCode: response
+        });
+
+    } catch (error) {
+        console.error("AI Fix Code Error:", error);
+
+        return res.status(200).json({
+            success: true,
+            mode: "demo",
+            fixedCode: "AI fix is temporarily unavailable."
+        });
+    }
+};

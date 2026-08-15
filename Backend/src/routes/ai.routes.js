@@ -6,5 +6,6 @@ router.post("/get-review", aiController.getReview)
 
 router.post("/explain-code", aiController.explainCode);
 
+router.post("/fix-code", aiController.fixCode);
 
 module.exports = router;
