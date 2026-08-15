@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import Editor from "react-simple-code-editor";
+
 import Prism from "prismjs";
 
 import "prismjs/components/prism-clike";
@@ -192,6 +193,10 @@ function App() {
 
     const [error, setError] = useState("");
 
+    const [explainLoading, setExplainLoading] = useState(false);
+    const [explanation, setExplanation] = useState("");
+    const [explainError, setExplainError] = useState("");
+
 
     /* Full / Selected Code */
 
@@ -209,50 +214,122 @@ function App() {
 
 
     /* ============================= */
+    /* EXPLAIN CODE */
+    /* ============================= */
+
+    async function explainCode() {
+
+        if (!code.trim()) {
+            setExplainError("Please enter some code first.");
+            return;
+        }
+
+        if (
+            reviewScope === "selected" &&
+            !selectedCode.trim()
+        ) {
+            setExplainError(
+                "Please select some code first for explanation."
+            );
+            return;
+        }
+
+        setExplainLoading(true);
+        setExplainError("");
+        setExplanation("");
+
+        try {
+
+            const codeToExplain =
+                reviewScope === "selected"
+                    ? selectedCode
+                    : code;
+
+            const response = await axios.post(
+                "https://code-reviewer-s0ya.onrender.com/ai/explain-code",
+                {
+                    code: codeToExplain,
+                    language: language.name
+                }
+            );
+
+            console.log(
+                "EXPLANATION RESPONSE:",
+                response.data
+            );
+
+            setExplanation(
+                response.data.explanation
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Explain Code Error:",
+                error
+            );
+
+            setExplainError(
+                error.response?.data?.message ||
+                "Something went wrong while explaining the code."
+            );
+
+        } finally {
+            setExplainLoading(false);
+        }
+    }
+
+
+    /* ============================= */
     /* SCORE EXTRACTION */
     /* ============================= */
 
     function extractScores(reviewText) {
 
-    const cleanText = reviewText
-        .replace(/\*/g, "")
-        .replace(/#/g, "")
-        .trim();
-
-    const getScore = (name) => {
-
-        const regex = new RegExp(
-            name +
-            "\\s*(?::|-)?\\s*(\\d+(?:\\.\\d+)?)\\s*(?:/\\s*10|out\\s*of\\s*10)",
-            "i"
-        );
-
-        const match = cleanText.match(regex);
-
-        return match ? Number(match[1]) : null;
-    };
-
-    return {
-        codeQuality: getScore("Code Quality"),
-        performance: getScore("Performance"),
-        security: getScore("Security"),
-        readability: getScore("Readability"),
-        maintainability: getScore("Maintainability"),
-        overall: getScore("Overall Score")
-    };
-}
+        const cleanText = reviewText.replace(/\*/g, "");
 
 
-function extractBugDetection(reviewText) {
+        const getScore = (name) => {
 
-    const match = reviewText.match(
-        /## 🐛 Bug Detection[\s\S]*?(?=\n## |$)/
-    );
+            const regex = new RegExp(
+                name +
+                "\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*/\\s*10",
+                "i"
+            );
 
-    return match
-        ? match[0]
-        : "";
-}
+
+            const match = cleanText.match(regex);
+
+
+            return match
+                ? Number(match[1])
+                : null;
+        };
+
+
+        return {
+
+            codeQuality:
+                getScore("Code Quality"),
+
+            performance:
+                getScore("Performance"),
+
+            security:
+                getScore("Security"),
+
+            readability:
+                getScore("Readability"),
+
+            maintainability:
+                getScore("Maintainability"),
+
+            overall:
+                getScore("Overall Score")
+
+        };
+    }
+
 
     /* ============================= */
     /* CODE SELECTION */
@@ -382,11 +459,6 @@ function extractBugDetection(reviewText) {
         review
             ? extractScores(review)
             : null;
-
-    const bugDetection =
-    review
-        ? extractBugDetection(review)
-        : "";
 
 
     /* ============================= */
@@ -524,6 +596,8 @@ function extractBugDetection(reviewText) {
                             setSelectedCode("");
 
                             setReview("");
+                            setExplanation("");
+                            setExplainError("");
 
                         }}
 
@@ -582,6 +656,19 @@ function extractBugDetection(reviewText) {
                                 : "Review"
                         }
 
+                    </button>
+
+                    {/* EXPLAIN BUTTON */}
+                    <button
+                        className="explain-button"
+                        onClick={explainCode}
+                        disabled={explainLoading}
+                    >
+                        {
+                            explainLoading
+                                ? "Explaining..."
+                                : "🧠 Explain Code"
+                        }
                     </button>
 
 
@@ -655,6 +742,39 @@ function extractBugDetection(reviewText) {
                     </div>
 
                 )}
+
+
+                {/* EXPLANATION ERROR */}
+                {explainError && (
+                    <div className="error-box">
+                        ❌ {explainError}
+                    </div>
+                )}
+
+                {/* EXPLANATION LOADING */}
+                {explainLoading && (
+                    <div className="loading">
+                        <div className="loader"></div>
+                        <p>
+                            AI is explaining your code...
+                        </p>
+                    </div>
+                )}
+
+                {/* CODE EXPLANATION */}
+                {!explainLoading &&
+                    !explainError &&
+                    explanation && (
+                        <div className="explanation-content">
+                            <Markdown
+                                rehypePlugins={[
+                                    rehypeHighlight
+                                ]}
+                            >
+                                {explanation}
+                            </Markdown>
+                        </div>
+                    )}
 
 
                 {/* SCORE */}
@@ -789,27 +909,6 @@ function extractBugDetection(reviewText) {
 
                     )}
 
-                {/* BUG DETECTION */}
-
-                {!loading &&
-                    !error &&
-                    review &&
-                    bugDetection && (
-
-                       <div className="bug-detection">
-
-                            <Markdown
-                                rehypePlugins={[
-                                    rehypeHighlight
-                                ]}
-                            >
-                                {bugDetection}
-                            </Markdown>
-
-                        </div>
-
-                    )}
-
 
                 {/* REVIEW */}
 
@@ -827,15 +926,10 @@ function extractBugDetection(reviewText) {
                             >
 
                                 {
-                                    review
-                                           .replace(
-                                              /## 🐛 Bug Detection[\s\S]*?(?=\n## |$)/,
-                                              ""
-                                            )
-                                            .replace(
-                                               /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
-                                               ""
-                                            )
+                                    review.replace(
+                                        /## 📊 Score[\s\S]*?(?=## 🎯 Final Recommendation|$)/,
+                                        ""
+                                    )
                                 }
 
                             </Markdown>
