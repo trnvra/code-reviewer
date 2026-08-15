@@ -129,3 +129,73 @@ module.exports.getReview = async (req, res) => {
         });
     }
 };
+
+module.exports.explainCode = async (req, res) => {
+
+    try {
+
+        const code = req.body.code;
+        const language = req.body.language || "Unknown";
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: "code is required"
+            });
+        }
+
+        const prompt = `
+Explain the following ${language} code in simple and beginner-friendly language.
+
+Use exactly this structure:
+
+## 🧠 Code Explanation
+
+### What this code does
+Explain the main purpose of the code in simple words.
+
+### Step-by-step explanation
+Explain how the code works step by step.
+
+### Important variables
+Explain the important variables and what they store.
+
+### How the logic works
+Explain the main logic of the program.
+
+### Example / Dry Run
+Give a small example or dry run when possible.
+
+Important:
+- Do not review or criticize the code.
+- Do not give scores.
+- Do not suggest optimizations unless necessary for understanding.
+- Focus only on explaining the existing code.
+- Keep the explanation beginner-friendly.
+
+Code:
+
+\`\`\`${language}
+${code}
+\`\`\`
+`;
+
+        const response = await aiService(prompt);
+
+        return res.status(200).json({
+            success: true,
+            mode: "ai",
+            explanation: response
+        });
+
+    } catch (error) {
+
+        console.error("AI Explain Error:", error);
+
+        return res.status(200).json({
+            success: true,
+            mode: "demo",
+            explanation: "AI explanation is temporarily unavailable."
+        });
+    }
+};
