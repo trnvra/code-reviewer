@@ -8,4 +8,6 @@ router.post("/explain-code", aiController.explainCode);
 
 router.post("/fix-code", aiController.fixCode);
 
+router.post("/test-cases", aiController.generateTestCases);
+
 module.exports = router;

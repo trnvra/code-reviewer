@@ -261,3 +261,79 @@ ${code}
         });
     }
 };
+
+module.exports.generateTestCases = async (req, res) => {
+
+    try {
+
+        const code = req.body.code;
+        const language = req.body.language || "Unknown";
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: "code is required"
+            });
+        }
+
+        const prompt = `
+Generate test cases for the following ${language} code.
+
+Use exactly this structure:
+
+## 🧪 Test Cases
+
+### Test Case 1
+- Input:
+- Expected Output:
+- Explanation:
+
+### Test Case 2
+- Input:
+- Expected Output:
+- Explanation:
+
+### Test Case 3
+- Input:
+- Expected Output:
+- Explanation:
+
+Important:
+- Generate useful test cases based on the actual code.
+- Include normal cases.
+- Include edge cases when applicable.
+- Include invalid or boundary cases when applicable.
+- Do not modify or fix the code.
+- Do not give a review score.
+- Do not explain the entire code.
+- Keep the test cases simple and beginner-friendly.
+- Do not invent inputs that are not supported by the code.
+
+Code:
+
+\`\`\`${language}
+${code}
+\`\`\`
+`;
+
+        const response = await aiService(prompt);
+
+        return res.status(200).json({
+            success: true,
+            mode: "ai",
+            testCases: response
+        });
+
+    } catch (error) {
+
+        console.error("AI Test Cases Error:", error);
+        console.error("ERROR MESSAGE:", error.message);
+        console.error("ERROR RESPONSE:", error.response?.data);
+
+        return res.status(200).json({
+            success: true,
+            mode: "demo",
+            testCases: "AI test case generation is temporarily unavailable."
+        });
+    }
+};
