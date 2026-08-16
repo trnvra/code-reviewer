@@ -197,6 +197,9 @@ function App() {
     const [explanation, setExplanation] = useState("");
     const [explainError, setExplainError] = useState("");
 
+    const [testCasesLoading, setTestCasesLoading] = useState(false);
+    const [testCases, setTestCases] = useState("");
+    const [testCasesError, setTestCasesError] = useState("");
 
     /* Full / Selected Code */
 
@@ -280,6 +283,137 @@ function App() {
             setExplainLoading(false);
         }
     }
+
+    async function fixCode() {
+
+    if (!code.trim()) {
+        setExplainError("Please enter some code first.");
+        return;
+    }
+
+    if (
+        reviewScope === "selected" &&
+        !selectedCode.trim()
+    ) {
+        setExplainError(
+            "Please select some code first for fixing."
+        );
+        return;
+    }
+
+    setExplainLoading(true);
+    setExplainError("");
+    setExplanation("");
+
+    setReview("");
+    setMode("");
+
+    try {
+
+        const codeToFix =
+            reviewScope === "selected"
+                ? selectedCode
+                : code;
+
+        const response = await axios.post(
+            "https://code-reviewer-s0ya.onrender.com/ai/fix-code",
+            {
+                code: codeToFix,
+                language: language.name
+            }
+        );
+
+        console.log(
+            "FIX CODE RESPONSE:",
+            response.data
+        );
+
+        setExplanation(
+            response.data.fixedCode
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Fix Code Error:",
+            error
+        );
+
+        setExplainError(
+            error.response?.data?.message ||
+            "Something went wrong while fixing the code."
+        );
+
+    } finally {
+        setExplainLoading(false);
+    }
+}  
+    async function generateTestCases() {
+
+    if (!code.trim()) {
+        setTestCasesError("Please enter some code first.");
+        return;
+    }
+
+    if (
+        reviewScope === "selected" &&
+        !selectedCode.trim()
+    ) {
+        setTestCasesError(
+            "Please select some code first for test cases."
+        );
+        return;
+    }
+
+    setTestCasesLoading(true);
+    setTestCasesError("");
+    setTestCases("");
+
+    setReview("");
+    setExplanation("");
+    setExplainError("");
+    setMode("");
+
+    try {
+
+        const codeToTest =
+            reviewScope === "selected"
+                ? selectedCode
+                : code;
+
+        const response = await axios.post(
+            "https://code-reviewer-s0ya.onrender.com/ai/test-cases",
+            {
+                code: codeToTest,
+                language: language.name
+            }
+        );
+
+        console.log(
+            "TEST CASES RESPONSE:",
+            response.data
+        );
+
+        setTestCases(
+            response.data.testCases
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Test Cases Error:",
+            error
+        );
+
+        setTestCasesError(
+            error.response?.data?.message ||
+            "Something went wrong while generating test cases."
+        );
+
+    } finally {
+        setTestCasesLoading(false);
+    }
+}
 
 
     /* ============================= */
@@ -600,6 +734,8 @@ function App() {
                             setReview("");
                             setExplanation("");
                             setExplainError("");
+                            setTestCases("");
+                            setTestCasesError("");
 
                         }}
 
@@ -670,6 +806,27 @@ function App() {
                             explainLoading
                                 ? "Explaining..."
                                 : "🧠 Explain Code"
+                        }
+                    </button>
+
+                    {/* FIX CODE BUTTON */}
+                    <button
+                        className="fix-button"
+                        onClick={fixCode}
+                    >
+                        🔧 Fix Code
+                    </button>
+
+                    {/* TEST CASES BUTTON */}
+                    <button
+                        className="test-cases-button"
+                        onClick={generateTestCases}
+                        disabled={testCasesLoading}
+                    >
+                        {
+                           testCasesLoading
+                               ? "Generating..."
+                               : "🧪 Test Cases"
                         }
                     </button>
 
@@ -777,6 +934,39 @@ function App() {
                             </Markdown>
                         </div>
                     )}
+
+                {/* EXPLANATION */}
+{explanation && (
+    <div className="explanation-content">
+        <Markdown rehypePlugins={[rehypeHighlight]}>
+            {explanation}
+        </Markdown>
+    </div>
+)}
+
+{/* TEST CASES */}
+{testCasesError && (
+    <div className="error-box">
+        ❌ {testCasesError}
+    </div>
+)}
+
+{testCasesLoading && (
+    <div className="loading">
+        <div className="loader"></div>
+        <p>AI is generating test cases...</p>
+    </div>
+)}
+
+{!testCasesLoading &&
+    !testCasesError &&
+    testCases && (
+        <div className="explanation-content">
+            <Markdown rehypePlugins={[rehypeHighlight]}>
+                {testCases}
+            </Markdown>
+        </div>
+    )}
 
 
                 {/* SCORE */}
@@ -947,7 +1137,8 @@ function App() {
                 {!loading &&
                     !error &&
                     !review && (
-
+                    !explanation && (
+                    !testCases && (
                         <div className="empty-review">
 
 
@@ -969,7 +1160,7 @@ function App() {
 
                         </div>
 
-                    )}
+                    )))}
 
 
             </section>

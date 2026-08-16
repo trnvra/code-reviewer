@@ -577,7 +577,7 @@ main.app {
 .explain-button {
     position: absolute;
     bottom: 15px;
-    right: 150px;
+    right: 272px;
 
     padding: 13px 20px;
 
@@ -697,14 +697,132 @@ main.app {
 
 @media (max-width: 768px) {
 
+    .fix-button {
+        right: 300px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
     .explain-button {
-        right: 140px;
-        padding: 12px 16px;
-        font-size: 14px;
+        right: 205px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .test-cases-button {
+        right: 105px;
+        padding: 10px 10px;
+        font-size: 12px;
     }
 
     .review-button {
-        right: 15px;
-        padding: 12px 20px;
+        right: 10px;
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+}
+
+/* ============================= */
+/* FIX CODE BUTTON */
+/* ============================= */
+
+.fix-button {
+    position: absolute;
+    bottom: 15px;
+    right: 434px;
+
+    padding: 13px 20px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #f59e0b,
+        #f97316
+    );
+
+    color: white;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 25px rgba(249, 115, 22, 0.30);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.fix-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(249, 115, 22, 0.45);
+}
+
+.fix-button:active {
+    transform: translateY(0);
+}
+
+.test-cases-button {
+    position: absolute;
+    bottom: 15px;
+    right: 136px;
+
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+
+    background: #2563eb;
+    color: white;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.test-cases-button:hover {
+    background: #1d4ed8;
+}
+
+.test-cases-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+/* ============================= */
+/* FINAL MOBILE BUTTON OVERRIDE */
+/* ============================= */
+
+@media (max-width: 768px) {
+
+    .editor-container .fix-button {
+        right: 300px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .editor-container .explain-button {
+        right: 205px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .editor-container .test-cases-button {
+        right: 105px;
+        padding: 10px 10px;
+        font-size: 12px;
+    }
+
+    .editor-container .review-button {
+        right: 10px;
+        padding: 10px 14px;
+        font-size: 12px;
     }
 }
