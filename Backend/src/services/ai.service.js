@@ -1,12 +1,18 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY);
+const apiKey = process.env.GOOGLE_GEMINI_KEY || "";
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const isStandardKey = apiKey.startsWith("AIzaSy");
+const modelName = isStandardKey ? "gemini-1.5-flash" : "gemini-3.6-flash";
+
+console.log(`Using AI Model: ${modelName} (${isStandardKey ? "Standard Key" : "Custom Key"})`);
 
 const model = genAI.getGenerativeModel({
-    model: "gemini-3.6-flash",
+    model: modelName,
     generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 1024, // Optimized token size for faster generation
+        maxOutputTokens: 1024,
     },
     systemInstruction: `
 You are a Senior Code Reviewer with 7+ years of experience.
