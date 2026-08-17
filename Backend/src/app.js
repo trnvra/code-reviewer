@@ -1,18 +1,19 @@
 const express = require('express');
-const aiRoutes = require('./routes/ai.routes')
-const cors = require('cors')
+const aiRoutes = require('./routes/ai.routes');
+const authRoutes = require('./routes/auth.routes');
+const cors = require('cors');
 
-const app = express()
+const app = express();
 
-app.use(cors())
-
-
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Hello World')
-})
+    res.send('CodeMind AI Backend is running');
+});
 
-app.use('/ai', aiRoutes)
+// Routes
+app.use('/ai', aiRoutes);
+app.use('/auth', authRoutes);
 
-module.exports = app
+module.exports = app;
