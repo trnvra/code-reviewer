@@ -3,18 +3,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const apiKey = process.env.GOOGLE_GEMINI_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
 
-const isStandardKey = apiKey.startsWith("AIzaSy");
-const modelName = isStandardKey ? "gemini-1.5-flash" : "gemini-3.6-flash";
-
-console.log(`Using AI Model: ${modelName} (${isStandardKey ? "Standard Key" : "Custom Key"})`);
-
-const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 1024,
-    },
-    systemInstruction: `
+const SYSTEM_INSTRUCTION = `
 You are a Senior Code Reviewer with 7+ years of experience.
 Analyze the user's code and provide extremely concise, practical feedback.
 
@@ -76,48 +65,62 @@ Overall Score:
 
 ## 🎯 Final Recommendation
 1 short sentence actionable conclusion.
-`
-});
-
+`;
 
 async function generateContent(prompt) {
-    const retries = 3;
-    const timeoutMs = 6000; // 6 seconds timeout
+    const isStandardKey = apiKey.startsWith("AIzaSy");
+    
+    // Model Pool ordered by priority depending on API Key format
+    const modelPool = isStandardKey 
+        ? ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.6-flash", "gemini-1.5-pro"]
+        : ["gemini-3.6-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
 
-    for (let attempt = 1; attempt <= retries; attempt++) {
+    const timeoutMs = 6000; // 6 seconds timeout
+    let lastError = null;
+
+    for (let i = 0; i < modelPool.length; i++) {
+        const modelName = modelPool[i];
         try {
-            console.log(`Gemini API Call: Attempt ${attempt}/${retries}`);
+            console.log(`[AI Pool] Attempting query with model: ${modelName} (${i + 1}/${modelPool.length})`);
             
+            const modelInstance = genAI.getGenerativeModel({
+                model: modelName,
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 1024,
+                },
+                systemInstruction: SYSTEM_INSTRUCTION
+            });
+
             // Promise.race between model call and 6-second timeout
             const responseText = await Promise.race([
-                model.generateContent(prompt).then(res => res.response.text()),
+                modelInstance.generateContent(prompt).then(res => res.response.text()),
                 new Promise((_, reject) =>
                     setTimeout(() => reject(new Error("Timeout")), timeoutMs)
                 )
             ]);
 
             if (responseText && responseText.trim().length > 0) {
-                console.log("AI Review generated successfully");
+                console.log(`[AI Pool] ✅ Success with model: ${modelName}`);
                 return responseText;
             }
         } catch (error) {
-            console.error(`Attempt ${attempt} failed:`, error.message || error);
+            console.warn(`[AI Pool] ⚠️ Model ${modelName} failed:`, error.message || error);
+            lastError = error;
             
-            if (attempt === retries) {
-                // If it's the last attempt, throw the error
-                if (error.status === 429) {
-                    const quotaError = new Error("Gemini API quota exceeded");
-                    quotaError.status = 429;
-                    throw quotaError;
-                }
-                throw error;
-            }
-            
-            // Delay before retrying (exponential backoff: 500ms, 1000ms)
-            const delay = attempt * 500;
-            await new Promise(resolve => setTimeout(resolve, delay));
+            // Wait 200ms before falling back to the next model in the pool
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
     }
+
+    // If we exhausted the pool, raise the final error
+    if (lastError && lastError.status === 429) {
+        const quotaError = new Error("Gemini API quota exceeded across all fallback models");
+        quotaError.status = 429;
+        throw quotaError;
+    }
+    
+    throw lastError || new Error("All AI models in the fallback pool failed.");
 }
 
 
