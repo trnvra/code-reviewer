@@ -110,10 +110,9 @@ function generateDynamicFallbackTestCases(code, language) {
 }
 
 module.exports.getReview = async (req, res) => {
+    const code = req.body.code;
+    const language = req.body.language || "Unknown";
     try {
-        const code = req.body.code;
-        const language = req.body.language || "Unknown";
-
         if (!code) {
             return res.status(400).send("code is required");
         }
@@ -141,12 +140,9 @@ module.exports.getReview = async (req, res) => {
 };
 
 module.exports.explainCode = async (req, res) => {
-
+    const code = req.body.code;
+    const language = req.body.language || "Unknown";
     try {
-
-        const code = req.body.code;
-        const language = req.body.language || "Unknown";
-
         if (!code) {
             return res.status(400).json({
                 success: false,
@@ -212,10 +208,9 @@ ${code}
 };
 
 module.exports.fixCode = async (req, res) => {
+    const code = req.body.code;
+    const language = req.body.language || "Unknown";
     try {
-        const code = req.body.code;
-        const language = req.body.language || "Unknown";
-
         if (!code) {
             return res.status(400).json({
                 success: false,
@@ -275,12 +270,9 @@ ${code}
 };
 
 module.exports.generateTestCases = async (req, res) => {
-
+    const code = req.body.code;
+    const language = req.body.language || "Unknown";
     try {
-
-        const code = req.body.code;
-        const language = req.body.language || "Unknown";
-
         if (!code) {
             return res.status(400).json({
                 success: false,
