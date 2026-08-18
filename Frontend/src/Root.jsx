@@ -47,7 +47,6 @@ export default function Root() {
   function handleLogout() {
     localStorage.removeItem("codemind_token");
     localStorage.removeItem("codemind_user");
-    localStorage.removeItem("codemind_history");
     setUser(null);
   }
 

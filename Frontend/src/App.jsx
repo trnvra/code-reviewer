@@ -1426,9 +1426,14 @@ export default function App({ user, onLogout }) {
   // Code editor lifted state
   const [editorCode, setEditorCode] = useState(DEMO_FILES["main.js"]);
 
+  const historyKey = user ? `codemind_history_${user.id || user.email}` : "codemind_history";
+
   // History (localStorage)
   const [history, setHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("codemind_history") || "[]"); }
+    try {
+      const key = user ? `codemind_history_${user.id || user.email}` : "codemind_history";
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    }
     catch { return []; }
   });
 
@@ -1446,7 +1451,7 @@ export default function App({ user, onLogout }) {
     };
     setHistory(prev => {
       const next = [entry, ...prev].slice(0, 50);
-      localStorage.setItem("codemind_history", JSON.stringify(next));
+      localStorage.setItem(historyKey, JSON.stringify(next));
       return next;
     });
   }
@@ -1518,7 +1523,7 @@ export default function App({ user, onLogout }) {
   function handleDeleteHistory(id) {
     setHistory(prev => {
       const next = prev.filter(h => h.id !== id);
-      localStorage.setItem("codemind_history", JSON.stringify(next));
+      localStorage.setItem(historyKey, JSON.stringify(next));
       return next;
     });
   }
