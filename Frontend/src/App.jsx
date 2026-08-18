@@ -1426,12 +1426,16 @@ export default function App({ user, onLogout }) {
   // Code editor lifted state
   const [editorCode, setEditorCode] = useState(DEMO_FILES["main.js"]);
 
-  const historyKey = user ? `codemind_history_${user.id || user.email}` : "codemind_history";
+  const historyKey = user && user.email 
+    ? `codemind_history_${user.email.toLowerCase().replace(/[^a-zA-Z0-9]/g, "_")}` 
+    : "codemind_history";
 
   // History (localStorage)
   const [history, setHistory] = useState(() => {
     try {
-      const key = user ? `codemind_history_${user.id || user.email}` : "codemind_history";
+      const key = user && user.email 
+        ? `codemind_history_${user.email.toLowerCase().replace(/[^a-zA-Z0-9]/g, "_")}` 
+        : "codemind_history";
       return JSON.parse(localStorage.getItem(key) || "[]");
     }
     catch { return []; }

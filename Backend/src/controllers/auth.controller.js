@@ -1,9 +1,27 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/* ─── In-memory user store (persists while server is running) ─── */
-/* For production, replace with a database like MongoDB / PostgreSQL */
-const users = [];
+const fs = require("fs");
+const path = require("path");
+
+const USERS_FILE = path.join(__dirname, "../../../users.json");
+
+let users = [];
+try {
+    if (fs.existsSync(USERS_FILE)) {
+        users = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
+    }
+} catch (e) {
+    console.error("Failed to load persistent users database:", e);
+}
+
+function saveUsersToFile() {
+    try {
+        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf8");
+    } catch (e) {
+        console.error("Failed to write users database file:", e);
+    }
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || "codemind_ai_secret_key";
 const JWT_EXPIRES = "7d"; // token valid for 7 days
@@ -61,6 +79,7 @@ module.exports.register = async (req, res) => {
         };
 
         users.push(newUser);
+        saveUsersToFile();
 
         // Generate token
         const token = jwt.sign(
