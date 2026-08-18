@@ -70,10 +70,10 @@ Overall Score:
 async function generateContent(prompt) {
     const isStandardKey = apiKey.startsWith("AIzaSy");
     
-    // Model Pool ordered by priority depending on API Key format
+    // Model Pool ordered by priority depending on API Key format (gemini-2.5-flash prioritized first)
     const modelPool = isStandardKey 
-        ? ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.6-flash", "gemini-1.5-pro"]
-        : ["gemini-3.6-flash", "gemini-1.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
+        ? ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-3.6-flash", "gemini-1.5-pro"]
+        : ["gemini-2.5-flash", "gemini-3.6-flash", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
 
     const timeoutMs = 6000; // 6 seconds timeout
     let lastError = null;
