@@ -121,11 +121,12 @@ module.exports.getReview = async (req, res) => {
         console.error("AI Review Error:", error);
 
         // AI service failed → Demo/Fallback Mode
+        const detailedError = `\n\n---\n⚠️ **AI Quota/Service Error Details:**\n\`\`\`\n${error.message || error}\n\`\`\``;
         return res.status(200).json({
             "success": true,
             "mode": "demo",
             "message": "AI service is temporarily unavailable...",
-            "review": "..."
+            "review": demoReview + detailedError
         });
     }
 };
@@ -195,7 +196,7 @@ ${code}
         return res.status(200).json({
             success: true,
             mode: "demo",
-            explanation: "AI explanation is temporarily unavailable."
+            explanation: "AI explanation is temporarily unavailable.\n\n---\n⚠️ **AI Quota/Service Error Details:**\n\`\`\`\n" + (error.message || error) + "\n\`\`\`"
         });
     }
 };
@@ -257,7 +258,7 @@ ${code}
         return res.status(200).json({
             success: true,
             mode: "demo",
-            fixedCode: "AI fix is temporarily unavailable."
+            fixedCode: "AI fix is temporarily unavailable.\n\n---\n⚠️ **AI Quota/Service Error Details:**\n\`\`\`\n" + (error.message || error) + "\n\`\`\`"
         });
     }
 };
@@ -333,7 +334,7 @@ ${code}
         return res.status(200).json({
             success: true,
             mode: "demo",
-            testCases: "AI test case generation is temporarily unavailable."
+            testCases: "AI test case generation is temporarily unavailable.\n\n---\n⚠️ **AI Quota/Service Error Details:**\n\`\`\`\n" + (error.message || error) + "\n\`\`\`"
         });
     }
 };
