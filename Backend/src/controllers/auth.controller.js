@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const JWT_SECRET = process.env.JWT_SECRET || "codemind_ai_secret_key";
-const JWT_EXPIRES = "30d"; // token valid for 30 days
+const JWT_EXPIRES = "7d"; // token valid for 7 days
 
 // Default bcrypt hash for "password123"
 const DEFAULT_PASSWORD_HASH = "$2b$10$kCFKRZ54aT4uBw2DdlZkhOLMiBY0h/0x61hUtiKXJM6.AZZmf80c6";
@@ -83,55 +83,79 @@ module.exports.register = async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        if (!email || !password) {
+        if (!name || !name.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Email and password are required."
+                message: "Full Name is required."
             });
         }
 
-        const cleanEmail = email.toLowerCase().trim();
-        const users = loadUsers();
-        let user = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
+        if (!email || !email.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Email address is required."
+            });
+        }
 
+        if (!password || password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters."
+            });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const cleanEmail = email.toLowerCase().trim();
+        if (!emailRegex.test(cleanEmail)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please enter a valid email address."
+            });
+        }
+
+        const users = loadUsers();
+
+        // Check if user already exists
+        const existing = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
+        if (existing) {
+            return res.status(409).json({
+                success: false,
+                message: "An account with this email already exists. Please Sign In."
+            });
+        }
+
+        // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        if (user) {
-            // If already exists, update name/password and log in directly without error
-            if (name && name.trim()) user.name = name.trim();
-            user.password = hashedPassword;
-        } else {
-            const displayName = (name && name.trim()) ? name.trim() : (cleanEmail.split('@')[0] || "User");
-            user = {
-                id: Date.now().toString(),
-                name: displayName,
-                email: cleanEmail,
-                password: hashedPassword,
-                createdAt: new Date().toISOString(),
-                plan: "Pro"
-            };
-            users.push(user);
-        }
+        const newUser = {
+            id: Date.now().toString(),
+            name: name.trim(),
+            email: cleanEmail,
+            password: hashedPassword,
+            createdAt: new Date().toISOString(),
+            plan: "Pro"
+        };
 
+        users.push(newUser);
         saveUsers(users);
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, name: user.name, plan: user.plan || "Pro" },
+            { id: newUser.id, email: newUser.email, name: newUser.name, plan: newUser.plan },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES }
         );
 
-        return res.status(200).json({
+        return res.status(201).json({
             success: true,
-            message: "Account ready! Logged in successfully.",
+            message: "Account created successfully!",
             token,
             user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                plan: user.plan || "Pro",
-                createdAt: user.createdAt
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+                plan: newUser.plan,
+                createdAt: newUser.createdAt
             }
         });
 
@@ -139,7 +163,7 @@ module.exports.register = async (req, res) => {
         console.error("Register Error:", error);
         return res.status(500).json({
             success: false,
-            message: "Something went wrong. Please try again."
+            message: "Something went wrong during registration. Please try again."
         });
     }
 };
@@ -150,43 +174,40 @@ module.exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email || !password) {
+        if (!email || !email.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Email and password are required."
+                message: "Email is required."
+            });
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: "Password is required."
             });
         }
 
         const cleanEmail = email.toLowerCase().trim();
         const users = loadUsers();
 
-        // Find user
-        let user = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
+        // Find user by email
+        const user = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
 
         if (!user) {
-            // Auto-create user with whatever email & password typed
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            const nameFromEmail = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
-            const capitalizedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
-            user = {
-                id: Date.now().toString(),
-                name: capitalizedName || "User",
-                email: cleanEmail,
-                password: hashedPassword,
-                createdAt: new Date().toISOString(),
-                plan: "Pro"
-            };
-            users.push(user);
-            saveUsers(users);
-        } else {
-            // Compare password - if doesn't match, auto-sync with the entered password!
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                const salt = await bcrypt.genSalt(10);
-                user.password = await bcrypt.hash(password, salt);
-                saveUsers(users);
-            }
+            return res.status(401).json({
+                success: false,
+                message: "Account not found with this email. Please register first."
+            });
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password. Please check and try again."
+            });
         }
 
         // Generate token
@@ -213,114 +234,7 @@ module.exports.login = async (req, res) => {
         console.error("Login Error:", error);
         return res.status(500).json({
             success: false,
-            message: "Something went wrong. Please try again."
-        });
-    }
-};
-
-/* ─── RESET PASSWORD (Zero friction recovery) ────────────── */
-
-module.exports.resetPassword = async (req, res) => {
-    try {
-        const { email, newPassword } = req.body;
-
-        if (!email || !newPassword) {
-            return res.status(400).json({
-                success: false,
-                message: "Email and new password are required."
-            });
-        }
-
-        const cleanEmail = email.toLowerCase().trim();
-        const users = loadUsers();
-        let user = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-        if (user) {
-            user.password = hashedPassword;
-        } else {
-            const nameFromEmail = cleanEmail.split('@')[0].replace(/[._-]/g, ' ');
-            const capitalizedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
-            user = {
-                id: Date.now().toString(),
-                name: capitalizedName || "User",
-                email: cleanEmail,
-                password: hashedPassword,
-                createdAt: new Date().toISOString(),
-                plan: "Pro"
-            };
-            users.push(user);
-        }
-
-        saveUsers(users);
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email, name: user.name, plan: user.plan || "Pro" },
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRES }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: "Password updated successfully! Logged in.",
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                plan: user.plan || "Pro",
-                createdAt: user.createdAt
-            }
-        });
-
-    } catch (error) {
-        console.error("Reset Password Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Failed to reset password. Please try again."
-        });
-    }
-};
-
-/* ─── 1-CLICK DEMO LOGIN (Instant Access) ──────────────────── */
-
-module.exports.demoLogin = async (req, res) => {
-    try {
-        const { email } = req.body || {};
-        const targetEmail = (email || "tarunv281@gmail.com").toLowerCase().trim();
-        const users = loadUsers();
-
-        let user = users.find(u => u.email.toLowerCase().trim() === targetEmail);
-        if (!user) {
-            user = users[0] || SEED_USERS[0];
-        }
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email, name: user.name, plan: user.plan || "Pro" },
-            JWT_SECRET,
-            { expiresIn: JWT_EXPIRES }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: `Welcome ${user.name}! Signed in successfully.`,
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                plan: user.plan || "Pro",
-                createdAt: user.createdAt
-            }
-        });
-
-    } catch (error) {
-        console.error("Demo Login Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Failed to sign in with demo account."
+            message: "Something went wrong during login. Please try again."
         });
     }
 };

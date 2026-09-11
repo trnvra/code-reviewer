@@ -172,20 +172,7 @@ export default function AuthPage({ onAuthSuccess }) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else if (err.code === "ERR_NETWORK" || !err.response) {
-        // Fallback local session if backend offline
-        const localUser = {
-          id: Date.now().toString(),
-          name: name.trim() || email.split("@")[0] || "User",
-          email: email.trim(),
-          plan: "Pro",
-          createdAt: new Date().toISOString()
-        };
-        localStorage.setItem("codemind_token", "demo-offline-token-" + Date.now());
-        localStorage.setItem("codemind_user", JSON.stringify(localUser));
-        setSuccess("Signed in! Redirecting…");
-        setTimeout(() => {
-          onAuthSuccess(localUser);
-        }, 200);
+        setError("Unable to connect to backend server. Please make sure the server is running.");
       } else {
         setError("Authentication error. Please try again.");
       }
