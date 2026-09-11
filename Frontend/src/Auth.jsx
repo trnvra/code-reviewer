@@ -2,7 +2,21 @@ import { useState } from "react";
 import axios from "axios";
 import "./Auth.css";
 
-const AUTH_BASE = import.meta.env.VITE_AUTH_URL || "http://localhost:3000/auth";
+/* ─── API Helper with dual proxy / direct fallback (Mobile + Desktop friendly) ─── */
+async function postAuth(endpoint, payload) {
+  const base1 = import.meta.env.VITE_AUTH_URL || "/auth";
+  try {
+    return await axios.post(`${base1}${endpoint}`, payload, { timeout: 6000 });
+  } catch (err) {
+    // If proxy failed or returned network error, fallback to direct port 3000 on current host
+    if ((err.code === "ERR_NETWORK" || !err.response || err.response?.status === 404) && !import.meta.env.VITE_AUTH_URL) {
+      const hostname = (typeof window !== "undefined" && window.location.hostname) ? window.location.hostname : "localhost";
+      const protocol = (typeof window !== "undefined" && window.location.protocol) ? window.location.protocol : "http:";
+      return await axios.post(`${protocol}//${hostname}:3000/auth${endpoint}`, payload, { timeout: 6000 });
+    }
+    throw err;
+  }
+}
 
 /* ─── Inline SVG icons ─── */
 const I = {
@@ -94,7 +108,7 @@ function getPasswordStrength(pw) {
    ============================================================ */
 
 export default function AuthPage({ onAuthSuccess }) {
-  const [tab, setTab] = useState("login"); // "login" | "signup"
+  const [tab, setTab] = useState("login"); // "login" | "signup" | "reset"
 
   /* Form fields */
   const [name,     setName]     = useState("");
@@ -103,17 +117,20 @@ export default function AuthPage({ onAuthSuccess }) {
   const [confirm,  setConfirm]  = useState("");
 
   /* UI state */
-  const [showPw,      setShowPw]      = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [loading,     setLoading]     = useState(false);
-  const [error,       setError]       = useState("");
-  const [success,     setSuccess]     = useState("");
+  const [showPw,        setShowPw]        = useState(false);
+  const [showConfirm,   setShowConfirm]   = useState(false);
+  const [loading,       setLoading]       = useState(false);
+  const [error,         setError]         = useState("");
+  const [success,       setSuccess]       = useState("");
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   const strength = getPasswordStrength(password);
 
   function resetForm() {
-    setName(""); setEmail(""); setPassword(""); setConfirm("");
-    setError(""); setSuccess(""); setShowPw(false); setShowConfirm(false);
+    setError("");
+    setSuccess("");
+    setShowPw(false);
+    setShowConfirm(false);
   }
 
   function switchTab(t) {
@@ -121,37 +138,109 @@ export default function AuthPage({ onAuthSuccess }) {
     resetForm();
   }
 
-  /* ─── SUBMIT ─── */
+  /* ─── PRESET AUTOFILL ─── */
+  function handleQuickFill() {
+    setEmail("tarunv281@gmail.com");
+    setPassword("password123");
+    setError("");
+  }
+
+  /* ─── INSTANT DEMO LOGIN (Zero friction) ─── */
+  async function handleDemoLogin(targetEmail = "tarunv281@gmail.com") {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await postAuth("/demo-login", { email: targetEmail });
+      if (res.data.success) {
+        localStorage.setItem("codemind_token", res.data.token);
+        localStorage.setItem("codemind_user", JSON.stringify(res.data.user));
+        setSuccess(`Signed in as ${res.data.user.name}! Redirecting…`);
+        setTimeout(() => {
+          onAuthSuccess(res.data.user);
+        }, 200);
+        return;
+      }
+    } catch {
+      // Backend not running or offline: seamless local session
+      const fallbackUser = {
+        id: "demo-user-offline",
+        name: targetEmail.includes("tarun") ? "Tarun Verma" : "Demo Developer",
+        email: targetEmail,
+        plan: "Pro",
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem("codemind_token", "demo-offline-token-" + Date.now());
+      localStorage.setItem("codemind_user", JSON.stringify(fallbackUser));
+      setSuccess(`Signed in in Demo Mode! Redirecting…`);
+      setTimeout(() => {
+        onAuthSuccess(fallbackUser);
+      }, 200);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* ─── SUBMIT HANDLER ─── */
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(""); setSuccess("");
+    setError("");
+    setSuccess("");
 
     /* Client-side validation */
+    if (!email.trim()) {
+      return setError("Please enter your email address.");
+    }
+
     if (tab === "signup") {
       if (!name.trim()) return setError("Please enter your full name.");
       if (password !== confirm) return setError("Passwords do not match.");
       if (password.length < 6) return setError("Password must be at least 6 characters.");
     }
 
+    if (tab === "reset") {
+      if (password.length < 6) return setError("New password must be at least 6 characters.");
+      if (confirm && password !== confirm) return setError("Passwords do not match.");
+    }
+
     setLoading(true);
     try {
-      const endpoint = tab === "login" ? "/login" : "/register";
-      const payload  = tab === "login"
-        ? { email, password }
-        : { name: name.trim(), email, password };
+      let endpoint = "/login";
+      let payload = { email: email.trim(), password };
 
-      const res = await axios.post(`${AUTH_BASE}${endpoint}`, payload);
+      if (tab === "signup") {
+        endpoint = "/register";
+        payload = { name: name.trim(), email: email.trim(), password };
+      } else if (tab === "reset") {
+        endpoint = "/reset-password";
+        payload = { email: email.trim(), newPassword: password };
+      }
+
+      const res = await postAuth(endpoint, payload);
 
       if (res.data.success) {
-        // Store token & user
         localStorage.setItem("codemind_token", res.data.token);
-        localStorage.setItem("codemind_user",  JSON.stringify(res.data.user));
+        localStorage.setItem("codemind_user", JSON.stringify(res.data.user));
 
-        setSuccess(tab === "login" ? "Welcome back! Redirecting…" : "Account created! Redirecting…");
-        setTimeout(() => onAuthSuccess(res.data.user), 900);
+        let msg = "Login successful! Redirecting…";
+        if (tab === "signup") msg = "Account created successfully! Redirecting…";
+        if (tab === "reset") msg = "Password reset! Signed in successfully…";
+
+        setSuccess(msg);
+        setTimeout(() => {
+          onAuthSuccess(res.data.user);
+        }, 250);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.code === "ERR_NETWORK" || !err.response) {
+        setIsOfflineMode(true);
+        setError("Unable to connect to backend server. You can still continue in Demo Mode.");
+      } else {
+        setError("Authentication error. Please try again or use 1-Click Demo Login.");
+      }
     } finally {
       setLoading(false);
     }
@@ -224,6 +313,38 @@ export default function AuthPage({ onAuthSuccess }) {
       <div className="auth-right">
         <div className="auth-card">
 
+          {/* ─── QUICK ACCESS / INSTANT LOGIN CARD ─── */}
+          <div className="auth-quick-card">
+            <div className="auth-quick-header">
+              <div className="auth-quick-badge">Instant 1-Click Access</div>
+              <span style={{ fontSize: 11, color: '#94a3b8' }}>No password required</span>
+            </div>
+            <div className="auth-quick-actions">
+              <button
+                type="button"
+                className="auth-quick-btn"
+                onClick={() => handleDemoLogin("tarunv281@gmail.com")}
+                disabled={loading}
+              >
+                👑 Tarun Verma
+              </button>
+              <button
+                type="button"
+                className="auth-quick-btn secondary"
+                onClick={() => handleDemoLogin("demo@codemind.com")}
+                disabled={loading}
+              >
+                ⚡ Guest / Demo
+              </button>
+            </div>
+            <div className="auth-preset-hint">
+              <span>💡 Test Credentials: <code className="auth-preset-code">password123</code></span>
+              <button type="button" className="auth-preset-btn" onClick={handleQuickFill}>
+                Auto-Fill Inputs
+              </button>
+            </div>
+          </div>
+
           {/* Tabs */}
           <div className="auth-tabs">
             <button
@@ -238,19 +359,31 @@ export default function AuthPage({ onAuthSuccess }) {
             >
               Create Account
             </button>
+            {tab === "reset" && (
+              <button className="auth-tab active" onClick={() => switchTab("reset")}>
+                Reset Password
+              </button>
+            )}
           </div>
 
           {/* Welcome text */}
           <div className="auth-welcome">
-            {tab === "login" ? (
+            {tab === "login" && (
               <>
                 <div className="auth-welcome-title">Welcome back 👋</div>
                 <div className="auth-welcome-sub">Sign in to continue to CodeMind AI.</div>
               </>
-            ) : (
+            )}
+            {tab === "signup" && (
               <>
-                <div className="auth-welcome-title">Create your account</div>
-                <div className="auth-welcome-sub">Start reviewing code smarter with AI.</div>
+                <div className="auth-welcome-title">Create your account 🚀</div>
+                <div className="auth-welcome-sub">Get started with free AI code reviews today.</div>
+              </>
+            )}
+            {tab === "reset" && (
+              <>
+                <div className="auth-welcome-title">Reset your password 🔑</div>
+                <div className="auth-welcome-sub">Enter your email and choose a new password.</div>
               </>
             )}
           </div>
@@ -263,18 +396,18 @@ export default function AuthPage({ onAuthSuccess }) {
               <div className="auth-field">
                 <label className="auth-label">Full Name</label>
                 <div className="auth-input-wrap">
-                  <I.User />
                   <input
                     id="auth-name"
                     className="auth-input"
                     type="text"
-                    placeholder="Rahul Sharma"
+                    placeholder="Tarun Verma"
                     value={name}
                     onChange={e => setName(e.target.value)}
                     required
                     autoComplete="name"
+                    autoFocus
                   />
-                  <span className="auth-input-icon" style={{ pointerEvents: "none" }}></span>
+                  <div className="auth-input-icon"><I.User /></div>
                 </div>
               </div>
             )}
@@ -283,42 +416,54 @@ export default function AuthPage({ onAuthSuccess }) {
             <div className="auth-field">
               <label className="auth-label">Email Address</label>
               <div className="auth-input-wrap">
-                <span className="auth-input-icon"><I.Mail /></span>
                 <input
                   id="auth-email"
                   className="auth-input"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="tarunv281@gmail.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
+                  autoFocus={tab === "login"}
                 />
+                <div className="auth-input-icon"><I.Mail /></div>
               </div>
             </div>
 
             {/* Password */}
             <div className="auth-field">
-              <label className="auth-label">Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label className="auth-label">
+                  {tab === "reset" ? "New Password" : "Password"}
+                </label>
+                {tab === "login" && (
+                  <div className="auth-forgot">
+                    <button type="button" onClick={() => switchTab("reset")}>
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="auth-input-wrap">
-                <span className="auth-input-icon"><I.Lock /></span>
                 <input
                   id="auth-password"
                   className="auth-input"
                   type={showPw ? "text" : "password"}
-                  placeholder={tab === "signup" ? "Min. 6 characters" : "Enter your password"}
+                  placeholder={tab === "login" ? "••••••••" : "Min. 6 characters"}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete={tab === "login" ? "current-password" : "new-password"}
                 />
+                <div className="auth-input-icon"><I.Lock /></div>
                 <button type="button" className="auth-pw-toggle" onClick={() => setShowPw(s => !s)}>
                   {showPw ? <I.EyeOff /> : <I.Eye />}
                 </button>
               </div>
 
-              {/* Password strength (signup) */}
-              {tab === "signup" && password && (
+              {/* Password strength (signup or reset) */}
+              {(tab === "signup" || tab === "reset") && password && (
                 <div className="pw-strength">
                   <div className="pw-strength-bars">
                     {[1, 2, 3, 4].map(i => (
@@ -335,22 +480,22 @@ export default function AuthPage({ onAuthSuccess }) {
               )}
             </div>
 
-            {/* Confirm Password (signup only) */}
-            {tab === "signup" && (
+            {/* Confirm Password (signup or reset) */}
+            {(tab === "signup" || tab === "reset") && (
               <div className="auth-field">
                 <label className="auth-label">Confirm Password</label>
                 <div className="auth-input-wrap">
-                  <span className="auth-input-icon"><I.Lock /></span>
                   <input
                     id="auth-confirm"
                     className={`auth-input ${confirm && confirm !== password ? "error-input" : ""}`}
                     type={showConfirm ? "text" : "password"}
-                    placeholder="Repeat your password"
+                    placeholder="Repeat password"
                     value={confirm}
                     onChange={e => setConfirm(e.target.value)}
                     required
                     autoComplete="new-password"
                   />
+                  <div className="auth-input-icon"><I.Lock /></div>
                   <button type="button" className="auth-pw-toggle" onClick={() => setShowConfirm(s => !s)}>
                     {showConfirm ? <I.EyeOff /> : <I.Eye />}
                   </button>
@@ -358,35 +503,79 @@ export default function AuthPage({ onAuthSuccess }) {
               </div>
             )}
 
-            {/* Forgot password (login only) */}
-            {tab === "login" && (
-              <div className="auth-forgot">
-                <button type="button">Forgot password?</button>
-              </div>
-            )}
-
-            {/* Error */}
+            {/* Error Message with Smart Recovery Actions */}
             {error && (
               <div className="auth-error">
                 <I.AlertCircle />
-                <span>
-                  {error}
-                  {tab === "signup" &&
-                    (error.toLowerCase().includes("already") ||
-                      error.toLowerCase().includes("exist") ||
-                      error.toLowerCase().includes("registered")) && (
-                      <>
-                        {" "}
-                        <button
-                          type="button"
-                          className="auth-error-link"
-                          onClick={() => switchTab("login")}
-                        >
-                          Sign In instead →
-                        </button>
-                      </>
-                    )}
-                </span>
+                <div style={{ flex: 1 }}>
+                  <span>{error}</span>
+                  
+                  {/* If incorrect password: offer Reset or 1-Click login */}
+                  {tab === "login" && (error.toLowerCase().includes("password") || error.toLowerCase().includes("incorrect")) && (
+                    <div style={{ marginTop: 4 }}>
+                      <button
+                        type="button"
+                        className="auth-error-link"
+                        onClick={() => switchTab("reset")}
+                      >
+                        Reset password now →
+                      </button>
+                      <button
+                        type="button"
+                        className="auth-action-btn"
+                        onClick={() => handleDemoLogin(email || "tarunv281@gmail.com")}
+                      >
+                        ⚡ 1-Click Sign In
+                      </button>
+                    </div>
+                  )}
+
+                  {/* If account not found: offer Create Account */}
+                  {tab === "login" && (error.toLowerCase().includes("not found") || error.toLowerCase().includes("register")) && (
+                    <div style={{ marginTop: 4 }}>
+                      <button
+                        type="button"
+                        className="auth-error-link"
+                        onClick={() => switchTab("signup")}
+                      >
+                        Create an account with this email →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* If already registered: offer Login or Reset */}
+                  {tab === "signup" && (error.toLowerCase().includes("already") || error.toLowerCase().includes("exist")) && (
+                    <div style={{ marginTop: 4 }}>
+                      <button
+                        type="button"
+                        className="auth-error-link"
+                        onClick={() => switchTab("login")}
+                      >
+                        Sign In instead →
+                      </button>
+                      <button
+                        type="button"
+                        className="auth-action-btn"
+                        onClick={() => switchTab("reset")}
+                      >
+                        Reset Password
+                      </button>
+                    </div>
+                  )}
+
+                  {/* If network / backend connection issue */}
+                  {isOfflineMode && (
+                    <div>
+                      <button
+                        type="button"
+                        className="auth-offline-btn"
+                        onClick={() => handleDemoLogin(email || "tarunv281@gmail.com")}
+                      >
+                        🚀 Continue in Demo Mode
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -405,11 +594,44 @@ export default function AuthPage({ onAuthSuccess }) {
               disabled={loading}
             >
               {loading ? (
-                <><div className="btn-spinner" /> {tab === "login" ? "Signing in…" : "Creating account…"}</>
+                <><div className="btn-spinner" /> Processing…</>
               ) : (
-                <>{tab === "login" ? "Sign In" : "Create Account"} <I.ArrowRight /></>
+                <>
+                  {tab === "login" && "Sign In"}
+                  {tab === "signup" && "Create Account"}
+                  {tab === "reset" && "Update Password & Sign In"}
+                  <I.ArrowRight />
+                </>
               )}
             </button>
+
+            {/* Switch Prompts */}
+            {tab === "login" && (
+              <div className="auth-switch-prompt">
+                Don't have an account?{" "}
+                <button type="button" className="auth-switch-link" onClick={() => switchTab("signup")}>
+                  Create Account
+                </button>
+              </div>
+            )}
+
+            {tab === "signup" && (
+              <div className="auth-switch-prompt">
+                Already have an account?{" "}
+                <button type="button" className="auth-switch-link" onClick={() => switchTab("login")}>
+                  Sign In
+                </button>
+              </div>
+            )}
+
+            {tab === "reset" && (
+              <div className="auth-switch-prompt">
+                Remembered your password?{" "}
+                <button type="button" className="auth-switch-link" onClick={() => switchTab("login")}>
+                  Back to Sign In
+                </button>
+              </div>
+            )}
 
             {/* Terms (signup) */}
             {tab === "signup" && (

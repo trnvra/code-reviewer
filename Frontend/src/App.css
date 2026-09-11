@@ -740,41 +740,43 @@ html, body, #root {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border);
-  padding: 0 8px;
-  gap: 2px;
+  padding: 8px 12px;
+  gap: 8px;
   flex-shrink: 0;
-  background: var(--bg-card);
-  min-height: 42px;
+  background: #141620;
+  min-height: 46px;
 }
 
 .output-tab {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  background: none;
-  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12.5px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
-  color: var(--text-muted);
+  color: #c8cbdc;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
 }
 
-.output-tab svg { width: 13px; height: 13px; }
+.output-tab svg { width: 14px; height: 14px; color: inherit; }
 
 .output-tab:hover {
-  color: var(--text-primary);
-  background: rgba(255,255,255,0.05);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .output-tab.active {
-  color: var(--accent-purple);
-  background: var(--accent-purple-dim);
-  border-color: rgba(124,92,255,0.25);
+  color: #ffffff;
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  box-shadow: 0 2px 12px rgba(124, 92, 255, 0.4);
 }
 
 /* ─── Output Panel Body ─── */
@@ -2137,19 +2139,255 @@ html, body, #root {
   font-style: italic;
 }
 
-/* ─── Responsive ─── */
+/* ─── Mobile View Tabs Switcher ─── */
+.mobile-view-tabs {
+  display: none;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 12px;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
+.mobile-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: #c8cbdc;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mobile-tab-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.mobile-tab-btn.active {
+  background: var(--accent-purple);
+  color: white;
+  border-color: var(--accent-purple);
+  box-shadow: 0 2px 10px rgba(124, 92, 255, 0.35);
+}
+
+/* ─── Responsive ─── */
 @media (max-width: 900px) {
-  .editor-right { display: none; }
-  .explain-right { width: 220px; min-width: 220px; }
+  .sidebar { display: none; }
   .history-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 }
 
-@media (max-width: 700px) {
-  .sidebar { display: none; }
-  .explain-right { display: none; }
-  .history-grid { grid-template-columns: 1fr; }
+@media (max-width: 768px) {
+  /* Global Overflow Safety */
+  html, body, #root, .app-shell, .main-area, .page-container {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Top Nav Mobile */
+  .top-nav {
+    padding: 0 10px;
+    gap: 6px;
+  }
+
+  .top-nav-brand {
+    margin-right: 6px;
+    font-size: 13.5px;
+  }
+
+  .logo-brand-accent {
+    display: inline;
+  }
+
+  .nav-tabs {
+    gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+
+  .top-new-chat-btn span {
+    display: none;
+  }
+
+  .top-new-chat-btn {
+    padding: 6px;
+    border-radius: var(--radius-sm);
+  }
+
+  .top-nav-user-wrap {
+    padding-left: 6px;
+    gap: 6px;
+  }
+
+  /* Mobile View Switcher in Editor Page */
+  .mobile-view-tabs {
+    display: flex;
+  }
+
+  .split-resizer {
+    display: none !important;
+  }
+
+  .editor-page {
+    flex-direction: column !important;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .editor-page.mobile-show-editor .editor-left {
+    display: flex !important;
+    width: 100% !important;
+    flex: 1 !important;
+  }
+
+  .editor-page.mobile-show-editor .editor-right {
+    display: none !important;
+  }
+
+  .editor-page.mobile-show-output .editor-left {
+    display: none !important;
+  }
+
+  .editor-page.mobile-show-output .editor-right {
+    display: flex !important;
+    width: 100% !important;
+    flex: 1 !important;
+  }
+
+  /* Bottom Actions Dock on Mobile */
+  .editor-bottom-bar {
+    padding: 10px 12px;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.4);
+  }
+
+  .bottom-bar-actions {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .bottom-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px 6px;
+    min-height: 44px; /* Touch target min height */
+    font-size: 12px;
+  }
+
+  .editor-scope-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 12px;
+  }
+
+  /* Review Page Mobile */
+  .review-page {
+    padding: 16px 12px;
+  }
+
+  .health-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .health-chips {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .review-page-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .review-page-topbar > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Explain Page Mobile */
+  .explain-container {
+    flex-direction: column;
+  }
+
+  .explain-left {
+    width: 100% !important;
+    flex: 1;
+  }
+
+  .explain-right {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  /* History Page Mobile */
+  .history-page {
+    padding: 16px 12px;
+  }
+
+  .history-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .history-search-wrap {
+    width: 100%;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
 }
+
+@media (max-width: 480px) {
+  .logo-brand-text {
+    font-size: 12.5px;
+  }
+  .nav-tab {
+    padding: 4px 6px;
+    font-size: 11.5px;
+  }
+  .nav-tab svg {
+    display: none;
+  }
+  .bottom-btn {
+    font-size: 11px;
+    padding: 8px 4px;
+    gap: 4px;
+  }
+  .bottom-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
 
 /* ─── Editor Scope/Status Bar ─── */
 .editor-scope-bar {

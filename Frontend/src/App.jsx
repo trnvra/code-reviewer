@@ -22,7 +22,7 @@ import axios from "axios";
 import "./App.css";
 
 const CodeEditor = Editor.default || Editor;
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/ai";
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location.hostname ? `${window.location.protocol}//${window.location.hostname}:3000/ai` : "http://localhost:3000/ai");
 
 /* ============================================================
    LANGUAGE DETECTION
@@ -484,6 +484,7 @@ const DEMO_FILES = {
 function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLoading, review, explanation, fixedCode, scores, error, explainError, sidebarTrigger, onCodeUpdate, code, setCode }) {
   const [activeFile, setActiveFile] = useState("main.js");
   const [fileCodes, setFileCodes] = useState(DEMO_FILES);
+  const [mobileTab, setMobileTab] = useState("editor"); // "editor" | "output"
 
   useEffect(() => {
     setFileCodes(prev => ({ ...prev, [activeFile]: code }));
@@ -560,6 +561,7 @@ function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLo
   useEffect(() => {
     if (sidebarTrigger) {
       setActiveOutput(sidebarTrigger.tab);
+      if (sidebarTrigger.tab) setMobileTab("output");
       if (sidebarTrigger.tab === "fix") {
         setFixOriginalCode(codeToUse);
       }
@@ -604,7 +606,23 @@ function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLo
   }
 
   return (
-    <div className="editor-page" ref={containerRef}>
+    <div className={`editor-page mobile-show-${mobileTab}`} ref={containerRef}>
+      {/* Mobile-only View Switcher Tabs */}
+      <div className="mobile-view-tabs">
+        <button
+          className={`mobile-tab-btn ${mobileTab === "editor" ? "active" : ""}`}
+          onClick={() => setMobileTab("editor")}
+        >
+          <Icons.Editor /> Code Editor
+        </button>
+        <button
+          className={`mobile-tab-btn ${mobileTab === "output" ? "active" : ""}`}
+          onClick={() => setMobileTab("output")}
+        >
+          <Icons.Review /> AI Output {activeOutput ? `(${activeOutput.toUpperCase()})` : ""}
+        </button>
+      </div>
+
       <div className="editor-left" style={{ width: `${leftWidth}%`, flex: "none" }}>
         <div className="editor-file-tabs">
           {Object.keys(fileCodes).map(name => (
@@ -654,6 +672,7 @@ function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLo
               className="bottom-btn bottom-btn-fix"
               onClick={() => {
                 setActiveOutput("fix");
+                setMobileTab("output");
                 setFixOriginalCode(codeToUse);
                 onFix(codeToUse, language);
               }}
@@ -666,6 +685,7 @@ function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLo
               className="bottom-btn bottom-btn-explain"
               onClick={() => {
                 setActiveOutput("explain");
+                setMobileTab("output");
                 onExplain(codeToUse, language);
               }}
               disabled={explainLoading || loading || fixLoading}
@@ -677,6 +697,7 @@ function EditorPage({ onReview, onExplain, onFix, loading, explainLoading, fixLo
               className="bottom-btn bottom-btn-review"
               onClick={() => {
                 setActiveOutput("review");
+                setMobileTab("output");
                 onReview(codeToUse, language);
               }}
               disabled={loading || explainLoading || fixLoading}

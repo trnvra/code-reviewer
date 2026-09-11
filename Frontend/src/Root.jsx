@@ -3,23 +3,51 @@ import axios from "axios";
 import AuthPage from "./Auth.jsx";
 import App from "./App.jsx";
 
-const AUTH_BASE = import.meta.env.VITE_AUTH_URL || "http://localhost:3000/auth";
-
 export default function Root() {
-  const [user, setUser]       = useState(null);   // null = unknown, false = not logged in
+  const [user, setUser]         = useState(null);   // null = unknown / not logged in
   const [checking, setChecking] = useState(true);  // checking stored token on mount
 
   /* On mount: verify stored token */
   useEffect(() => {
     async function checkToken() {
       const token = localStorage.getItem("codemind_token");
-      if (!token) { setChecking(false); return; }
+      if (!token) {
+        setChecking(false);
+        return;
+      }
+
+      // If it's an offline/demo token, load cached user immediately
+      if (token.startsWith("demo-offline-token-")) {
+        const stored = localStorage.getItem("codemind_user");
+        if (stored) {
+          try { setUser(JSON.parse(stored)); } catch { /* ignore */ }
+        }
+        setChecking(false);
+        return;
+      }
 
       try {
-        const res = await axios.get(`${AUTH_BASE}/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.data.success) {
+        const base = import.meta.env.VITE_AUTH_URL || "/auth";
+        let res;
+        try {
+          res = await axios.get(`${base}/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 3000
+          });
+        } catch (err1) {
+          if (!import.meta.env.VITE_AUTH_URL) {
+            const hostname = (typeof window !== "undefined" && window.location.hostname) ? window.location.hostname : "localhost";
+            const protocol = (typeof window !== "undefined" && window.location.protocol) ? window.location.protocol : "http:";
+            res = await axios.get(`${protocol}//${hostname}:3000/auth/me`, {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 3000
+            });
+          } else {
+            throw err1;
+          }
+        }
+
+        if (res?.data?.success) {
           setUser(res.data.user);
         } else {
           localStorage.removeItem("codemind_token");
