@@ -119,6 +119,10 @@ export default function AuthPage({ onAuthSuccess }) {
   const strength = getPasswordStrength(password);
 
   function resetForm() {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setConfirm("");
     setError("");
     setSuccess("");
     setShowPw(false);
@@ -280,7 +284,7 @@ export default function AuthPage({ onAuthSuccess }) {
           </div>
 
           {/* Form */}
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+          <form className="auth-form" onSubmit={handleSubmit} noValidate autoComplete="off">
 
             {/* Name (signup only) */}
             {tab === "signup" && (
@@ -295,7 +299,7 @@ export default function AuthPage({ onAuthSuccess }) {
                     value={name}
                     onChange={e => setName(e.target.value)}
                     required
-                    autoComplete="name"
+                    autoComplete="off"
                     autoFocus
                   />
                   <div className="auth-input-icon"><I.User /></div>
@@ -315,7 +319,7 @@ export default function AuthPage({ onAuthSuccess }) {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
+                  autoComplete="off"
                   autoFocus={tab === "login"}
                 />
                 <div className="auth-input-icon"><I.Mail /></div>
@@ -334,7 +338,7 @@ export default function AuthPage({ onAuthSuccess }) {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
-                  autoComplete={tab === "login" ? "current-password" : "new-password"}
+                  autoComplete="new-password"
                 />
                 <div className="auth-input-icon"><I.Lock /></div>
                 <button type="button" className="auth-pw-toggle" onClick={() => setShowPw(s => !s)}>
