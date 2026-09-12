@@ -6,8 +6,6 @@ const path = require("path");
 const JWT_SECRET = process.env.JWT_SECRET || "codemind_ai_secret_key";
 const JWT_EXPIRES = "7d"; // token valid for 7 days
 
-const SEED_USERS = []; // No default users - fresh start always
-
 function getUsersFilePaths() {
     return [
         path.join(__dirname, "../../../users.json"), // Workspace root
@@ -36,7 +34,6 @@ function loadUsers() {
     saveUsers([]);
     return [];
 }
-
 
 function saveUsers(usersList) {
     const paths = getUsersFilePaths();

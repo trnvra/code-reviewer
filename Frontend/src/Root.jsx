@@ -57,13 +57,10 @@ export default function Root() {
           localStorage.removeItem("codemind_user");
         }
       } catch {
-        // Token invalid / server unreachable — fall back to stored user if available
-        const stored = localStorage.getItem("codemind_user");
-        if (stored) {
-          try { setUser(JSON.parse(stored)); } catch { /* ignore */ }
-        } else {
-          localStorage.removeItem("codemind_token");
-        }
+        // Token invalid or expired — clear everything and force login
+        localStorage.removeItem("codemind_token");
+        localStorage.removeItem("codemind_user");
+        setUser(null);
       } finally {
         setChecking(false);
       }

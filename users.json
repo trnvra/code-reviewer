@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "1789249377400",
+    "name": "Tarun",
+    "email": "tarunv281@gmail.com",
+    "password": "$2b$10$bfrIktRw/NyyKr1PxrvAdOtp9Io3uAuKgcHoqQtjS1M7NGXuePpM6",
+    "createdAt": "2026-09-12T21:42:57.400Z",
+    "plan": "Pro"
+  },
+  {
+    "id": "1789249506959",
+    "name": "Verma",
+    "email": "vermat11111@gmail.com",
+    "password": "$2b$10$9W2zjaQCfPqXKqw7SQ.5SeTHiKU3tCzP15wvp8if54SgAU/hSaIMK",
+    "createdAt": "2026-09-12T21:45:06.959Z",
+    "plan": "Pro"
+  }
+]
