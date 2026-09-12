@@ -22,7 +22,7 @@ import axios from "axios";
 import "./App.css";
 
 const CodeEditor = Editor.default || Editor;
-const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location.hostname ? `${window.location.protocol}//${window.location.hostname}:3000/ai` : "http://localhost:3000/ai");
+const API_BASE = import.meta.env.VITE_API_URL || "/ai";
 
 /* ============================================================
    LANGUAGE DETECTION

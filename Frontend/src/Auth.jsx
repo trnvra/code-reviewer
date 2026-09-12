@@ -2,32 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 import "./Auth.css";
 
-/* ─── API Helper (Mobile + Desktop friendly) ─── */
+/* ─── API Helper (uses Vite proxy — works on all devices) ─── */
 async function postAuth(endpoint, payload) {
-  // Try localhost:3000 directly first (most reliable for local dev)
-  const urls = [
-    `http://localhost:3000/auth${endpoint}`,
-    `http://127.0.0.1:3000/auth${endpoint}`,
-  ];
-
-  // If on a different device (mobile etc.), also try the window hostname
-  if (typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost") {
-    urls.push(`http://${window.location.hostname}:3000/auth${endpoint}`);
-  }
-
-  let lastErr = null;
-  for (const url of urls) {
-    try {
-      return await axios.post(url, payload, { timeout: 8000 });
-    } catch (err) {
-      lastErr = err;
-      // Only retry on network errors, not on auth errors (4xx)
-      if (err.response && err.response.status < 500) {
-        throw err;
-      }
-    }
-  }
-  throw lastErr;
+  // Use relative URL → Vite proxy forwards /auth/* to backend on any device
+  return axios.post(`/auth${endpoint}`, payload, { timeout: 8000 });
 }
 
 /* ─── Inline SVG icons ─── */

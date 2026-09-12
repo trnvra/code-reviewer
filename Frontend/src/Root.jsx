@@ -27,28 +27,11 @@ export default function Root() {
       }
 
       try {
-        // Try localhost:3000 directly (most reliable for local dev)
-        const meUrls = [
-          "http://localhost:3000/auth/me",
-          "http://127.0.0.1:3000/auth/me",
-        ];
-        if (typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost") {
-          meUrls.push(`http://${window.location.hostname}:3000/auth/me`);
-        }
-
-        let res;
-        for (const url of meUrls) {
-          try {
-            res = await axios.get(url, {
-              headers: { Authorization: `Bearer ${token}` },
-              timeout: 3000
-            });
-            break; // success, stop trying
-          } catch (err1) {
-            if (err1.response && err1.response.status < 500) throw err1; // auth error, don't retry
-            // network error, try next url
-          }
-        }
+        // Use relative URL → Vite proxy forwards /auth/* to backend on any device
+        const res = await axios.get("/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 5000
+        });
 
         if (res?.data?.success) {
           setUser(res.data.user);
