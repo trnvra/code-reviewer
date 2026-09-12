@@ -6,35 +6,7 @@ const path = require("path");
 const JWT_SECRET = process.env.JWT_SECRET || "codemind_ai_secret_key";
 const JWT_EXPIRES = "7d"; // token valid for 7 days
 
-// Default bcrypt hash for "password123"
-const DEFAULT_PASSWORD_HASH = "$2b$10$kCFKRZ54aT4uBw2DdlZkhOLMiBY0h/0x61hUtiKXJM6.AZZmf80c6";
-
-const SEED_USERS = [
-    {
-        id: "1787088086098",
-        name: "Tarun Verma",
-        email: "tarunv281@gmail.com",
-        password: DEFAULT_PASSWORD_HASH,
-        createdAt: "2026-08-18T21:21:26.098Z",
-        plan: "Pro"
-    },
-    {
-        id: "1788468445257",
-        name: "Test User",
-        email: "test@codemind.com",
-        password: DEFAULT_PASSWORD_HASH,
-        createdAt: "2026-09-03T20:47:25.257Z",
-        plan: "Pro"
-    },
-    {
-        id: "1789166551472",
-        name: "Demo Developer",
-        email: "demo@codemind.com",
-        password: DEFAULT_PASSWORD_HASH,
-        createdAt: "2026-09-11T22:42:31.472Z",
-        plan: "Pro"
-    }
-];
+const SEED_USERS = []; // No default users - fresh start always
 
 function getUsersFilePaths() {
     return [
@@ -51,8 +23,8 @@ function loadUsers() {
                 const content = fs.readFileSync(filePath, "utf8").trim();
                 if (content) {
                     const parsed = JSON.parse(content);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        return parsed;
+                    if (Array.isArray(parsed)) {
+                        return parsed; // Return even if empty array
                     }
                 }
             }
@@ -60,10 +32,11 @@ function loadUsers() {
             console.error(`Failed to read users from ${filePath}:`, e);
         }
     }
-    // If no valid users file found, seed default users
-    saveUsers(SEED_USERS);
-    return SEED_USERS;
+    // No valid file found — start with empty list
+    saveUsers([]);
+    return [];
 }
+
 
 function saveUsers(usersList) {
     const paths = getUsersFilePaths();
