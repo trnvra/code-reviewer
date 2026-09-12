@@ -118,9 +118,29 @@ module.exports.register = async (req, res) => {
         // Check if user already exists
         const existing = users.find(u => u.email.toLowerCase().trim() === cleanEmail);
         if (existing) {
+            const isMatch = await bcrypt.compare(password, existing.password);
+            if (isMatch) {
+                const token = jwt.sign(
+                    { id: existing.id, email: existing.email, name: existing.name, plan: existing.plan || "Pro" },
+                    JWT_SECRET,
+                    { expiresIn: JWT_EXPIRES }
+                );
+                return res.status(200).json({
+                    success: true,
+                    message: "Account already exists — Logged in successfully!",
+                    token,
+                    user: {
+                        id: existing.id,
+                        name: existing.name,
+                        email: existing.email,
+                        plan: existing.plan || "Pro",
+                        createdAt: existing.createdAt
+                    }
+                });
+            }
             return res.status(409).json({
                 success: false,
-                message: "An account with this email already exists. Please Sign In."
+                message: "An account with this email already exists. Please switch to Sign In."
             });
         }
 

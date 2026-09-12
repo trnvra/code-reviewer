@@ -1,0 +1,13 @@
+{
+  "name": "codemind-ai",
+  "version": "1.0.0",
+  "description": "CodeMind AI - AI-Powered Code Reviewer",
+  "scripts": {
+    "dev:backend": "npm --prefix Backend run dev",
+    "dev:frontend": "npm --prefix Frontend run dev",
+    "start": "npm --prefix Frontend run dev"
+  },
+  "keywords": ["ai", "code-review", "react", "express"],
+  "author": "Tarun Verma",
+  "license": "ISC"
+}
