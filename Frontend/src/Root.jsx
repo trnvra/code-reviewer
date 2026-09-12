@@ -27,23 +27,26 @@ export default function Root() {
       }
 
       try {
-        const base = import.meta.env.VITE_AUTH_URL || "/auth";
+        // Try localhost:3000 directly (most reliable for local dev)
+        const meUrls = [
+          "http://localhost:3000/auth/me",
+          "http://127.0.0.1:3000/auth/me",
+        ];
+        if (typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost") {
+          meUrls.push(`http://${window.location.hostname}:3000/auth/me`);
+        }
+
         let res;
-        try {
-          res = await axios.get(`${base}/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 3000
-          });
-        } catch (err1) {
-          if (!import.meta.env.VITE_AUTH_URL) {
-            const hostname = (typeof window !== "undefined" && window.location.hostname) ? window.location.hostname : "localhost";
-            const protocol = (typeof window !== "undefined" && window.location.protocol) ? window.location.protocol : "http:";
-            res = await axios.get(`${protocol}//${hostname}:3000/auth/me`, {
+        for (const url of meUrls) {
+          try {
+            res = await axios.get(url, {
               headers: { Authorization: `Bearer ${token}` },
               timeout: 3000
             });
-          } else {
-            throw err1;
+            break; // success, stop trying
+          } catch (err1) {
+            if (err1.response && err1.response.status < 500) throw err1; // auth error, don't retry
+            // network error, try next url
           }
         }
 

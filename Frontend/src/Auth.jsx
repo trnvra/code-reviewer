@@ -4,17 +4,30 @@ import "./Auth.css";
 
 /* ─── API Helper (Mobile + Desktop friendly) ─── */
 async function postAuth(endpoint, payload) {
-  const base1 = import.meta.env.VITE_AUTH_URL || "/auth";
-  try {
-    return await axios.post(`${base1}${endpoint}`, payload, { timeout: 8000 });
-  } catch (err) {
-    if ((err.code === "ERR_NETWORK" || !err.response || err.response?.status === 404) && !import.meta.env.VITE_AUTH_URL) {
-      const hostname = (typeof window !== "undefined" && window.location.hostname) ? window.location.hostname : "localhost";
-      const protocol = (typeof window !== "undefined" && window.location.protocol) ? window.location.protocol : "http:";
-      return await axios.post(`${protocol}//${hostname}:3000/auth${endpoint}`, payload, { timeout: 8000 });
-    }
-    throw err;
+  // Try localhost:3000 directly first (most reliable for local dev)
+  const urls = [
+    `http://localhost:3000/auth${endpoint}`,
+    `http://127.0.0.1:3000/auth${endpoint}`,
+  ];
+
+  // If on a different device (mobile etc.), also try the window hostname
+  if (typeof window !== "undefined" && window.location.hostname && window.location.hostname !== "localhost") {
+    urls.push(`http://${window.location.hostname}:3000/auth${endpoint}`);
   }
+
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      return await axios.post(url, payload, { timeout: 8000 });
+    } catch (err) {
+      lastErr = err;
+      // Only retry on network errors, not on auth errors (4xx)
+      if (err.response && err.response.status < 500) {
+        throw err;
+      }
+    }
+  }
+  throw lastErr;
 }
 
 /* ─── Inline SVG icons ─── */
